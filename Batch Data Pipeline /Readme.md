@@ -37,7 +37,7 @@ Our responsibility is to prepare clean data before 6 AM.
 Business users use Power BI dashboards every morning.
  ----------------------------------------
  Architectural Workflow From source to s3:
-
+```mermaid
  [Physical Retail Stores]
          │ 
          ▼ (Nightly Logs uploaded via SFTP)
@@ -56,11 +56,11 @@ Business users use Power BI dashboards every morning.
  │    │         └── /day=09/                              │
  │    │              └── store_001_sales.csv              │
  └────────────────────────────────────────────────────────┘
-
+```
  ----------------------------------------
 
 ## High-Level Architecture
-
+```mermaid
                 500 Stores
                      │
                      ▼
@@ -85,6 +85,7 @@ Business users use Power BI dashboards every morning.
                      │
                      ▼
               Power BI Dashboard
+```
 
 Store Generates Sales Data. Each store creates a CSV.
 
@@ -101,6 +102,7 @@ This is the Raw Layer.
 
 ## project structure is:
 
+```mermaid
 RetailBatchPipeline/
 │
 ├── data/
@@ -122,11 +124,13 @@ RetailBatchPipeline/
 ├── scripts/
 ├── airflow/
 └── README.md
+```
 
 ## Sales Files (Raw Data)
 
 Columns:
 
+```mermaid
 | Column           | Description               |
 | ---------------- | ------------------------- |
 | transaction_id   | Unique transaction ID     |
@@ -138,6 +142,7 @@ Columns:
 | transaction_time | Timestamp                 |
 | payment_method   | Cash/Card/UPI             |
 | cashier_id       | Cashier handling the sale |
+```
 
 ## Product, Store, Customers Lookup Table
 
@@ -151,6 +156,7 @@ Production systems always contain bad data. (Duplicates, Null, Invalid reords, m
 
 Your S3 bucket could look like this:
 
+```mermaid
 retail-sales-data/
 │
 ├── raw/
@@ -174,11 +180,13 @@ retail-sales-data/
 ├── processed/
 │
 └── archive/
+```
 
 ## Basic Validation
 always validates before processing. Check required columns.
 
 ## Airflow Scheduling
+```mermaid
 Every Night
 
 12:30 AM
@@ -190,10 +198,12 @@ Run pipeline
 ↓
 
 Finish before 5 AM
+```
 
 ## Power BI
 Bussiness Dashboard
 
+```mermaid
 - Daily Revenue
 
 - Monthly Revenue
@@ -207,11 +217,13 @@ Bussiness Dashboard
 - Category Revenue
 
 - Customer Growth
+```
 
 Power BI connects directly to Snowflake.
 
 ## Daily Timeline
 
+```mermaid
 11:45 PM
 
 Stores close
@@ -275,6 +287,6 @@ Power BI Refresh
 6:00 AM
 
 Business Opens
-
+```
 -------------------------------------------
 
