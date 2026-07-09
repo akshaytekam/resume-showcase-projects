@@ -36,27 +36,59 @@ Our responsibility is to prepare clean data before 6 AM.
 
 Business users use Power BI dashboards every morning.
  ----------------------------------------
- Architectural Workflow From source to s3:
+ Architectural Workflow From source to s3 (AWS Glue Batch Ingestion Architecture):
 ```mermaid
- [Physical Retail Stores]
-         │ 
-         ▼ (Nightly Logs uploaded via SFTP)
- ┌───────────────┐
- │ AWS Transfer  │  <── Authenticates store servers using AWS Secrets Manager
- │  for SFTP     │
- └───────┬───────┘
-         │
-         ▼ (Directly routes incoming streams)
+ ┌────────────────────────┐
+ │   Source Database      │ (e.g., Amazon RDS / On-Premises Mysql)
+ └───────────┬────────────┘
+             │
+             ▼ (Secure internal network access)
+ ┌────────────────────────┐
+ │  AWS Glue Connection   │ (Enforces VPC Subnet & Security Group rules)
+ └───────────┬────────────┘
+             │
+             ▼ (Nightly scheduled trigger)
+ ┌────────────────────────┐
+ │   AWS Glue ETL Job     │ <── Orchestrated by AWS Glue Workflow / EventBridge
+ └───────────┬────────────┘
+             │
+             ▼ (Executes Serverless Spark / Python script)
  ┌────────────────────────────────────────────────────────┐
- │           Amazon S3 Bucket (Target Location)           │
+ │               Target Amazon S3 Data Lake               │
  │                                                        │
  │  s3://retail-sales-for-retailmart/raw/sales/           │
  │    ├── /year=2026/                                     │
  │    │    └── /month=07/                                 │
  │    │         └── /day=09/                              │
- │    │              └── store_001_sales.csv              │
+ │    │              └── part-00000-data.parquet          │
  └────────────────────────────────────────────────────────┘
+
 ```
+
+## How the Partitioning Logic Works (Zero Code)
+
+1. The Source & Network Connection
+   The Source:
+   A transactional database holding the day's sales or application logs.
+   AWS Glue Connection:
+   A network configuration object within AWS Glue. It securely connects Glue's serverless environment into your specific VPC subnets, allowing it to communicate with your database through private IPs.
+
+2. The Orchestration Layer
+   AWS Glue Workflow (or Amazon EventBridge):
+   A time-based cron trigger fires automatically every night (e.g., at 12:00 AM). It kicks off the Glue ETL job.
+
+3. The Serverless ETL Processing Layer
+   AWS Glue ETL Job:
+   A managed PySpark or Python shell script that provisions compute workers on demand. It connects to the database, extracts the newest records, and partitions them on the fly.
+
+4. The S3 Storage Layer
+   Target Path:
+   The Glue script writes data directly into your bucket layout: s3://retail-sales-for-retailmart/raw/sales/.
+   Automatic Partitioning:
+   The Glue job uses Spark's native partitioning code to organize the files dynamically based on the current run date (year=2026/month=07/day=09/).
+   File Format Optimization:
+   While copying, Glue can convert raw row-based data into optimized formats like Apache Parquet or ORC for faster subsequent downstream queries.
+
  ----------------------------------------
 
 ## High-Level Architecture
