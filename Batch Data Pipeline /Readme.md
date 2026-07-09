@@ -35,6 +35,29 @@ Each file is uploaded automatically to AWS S3.
 Our responsibility is to prepare clean data before 6 AM.
 
 Business users use Power BI dashboards every morning.
+ ----------------------------------------
+ Architectural Workflow From source to s3:
+
+ [Physical Retail Stores]
+         │ 
+         ▼ (Nightly Logs uploaded via SFTP)
+ ┌───────────────┐
+ │ AWS Transfer  │  <── Authenticates store servers using AWS Secrets Manager
+ │  for SFTP     │
+ └───────┬───────┘
+         │
+         ▼ (Directly routes incoming streams)
+ ┌────────────────────────────────────────────────────────┐
+ │           Amazon S3 Bucket (Target Location)           │
+ │                                                        │
+ │  s3://retail-sales-for-retailmart/raw/sales/           │
+ │    ├── /year=2026/                                     │
+ │    │    └── /month=07/                                 │
+ │    │         └── /day=09/                              │
+ │    │              └── store_001_sales.csv              │
+ └────────────────────────────────────────────────────────┘
+
+ ----------------------------------------
 
 ## High-Level Architecture
 
