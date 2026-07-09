@@ -37,7 +37,7 @@ Our responsibility is to prepare clean data before 6 AM.
 Business users use Power BI dashboards every morning.
  ----------------------------------------
  Architectural Workflow From source to s3 (AWS Glue Batch Ingestion Architecture):
-```mermaid
+```text
  ┌────────────────────────┐
  │   Source Database      │ (e.g., Amazon RDS / On-Premises Mysql)
  └───────────┬────────────┘
@@ -92,7 +92,7 @@ Business users use Power BI dashboards every morning.
  ----------------------------------------
 
 ## High-Level Architecture
-```mermaid
+```text
                 500 Stores
                      │
                      ▼
@@ -134,7 +134,7 @@ This is the Raw Layer.
 
 ## project structure is:
 
-```mermaid
+```text
 RetailBatchPipeline/
 │
 ├── data/
@@ -162,7 +162,7 @@ RetailBatchPipeline/
 
 Columns:
 
-```mermaid
+```text
 | Column           | Description               |
 | ---------------- | ------------------------- |
 | transaction_id   | Unique transaction ID     |
@@ -188,7 +188,7 @@ Production systems always contain bad data. (Duplicates, Null, Invalid reords, m
 
 Your S3 bucket could look like this:
 
-```mermaid
+```text
 retail-sales-data/
 │
 ├── raw/
@@ -218,7 +218,7 @@ retail-sales-data/
 always validates before processing. Check required columns.
 
 ## Airflow Scheduling
-```mermaid
+```text
 Every Night
 
 12:30 AM
@@ -235,7 +235,7 @@ Finish before 5 AM
 ## Power BI
 Bussiness Dashboard
 
-```mermaid
+```text
 - Daily Revenue
 
 - Monthly Revenue
@@ -255,7 +255,7 @@ Power BI connects directly to Snowflake.
 
 ## Daily Timeline
 
-```mermaid
+```text
 11:45 PM
 
 Stores close
