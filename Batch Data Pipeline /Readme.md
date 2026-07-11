@@ -1,15 +1,13 @@
-## We'll build it step by step, including:
+## Build it step by step, including:
 
-Business requirement
-Folder structure
-Data
-PySpark code
-Delta Lake
-Snowflake loading
-Airflow DAG
-Best practices
-Interview questions
-Real-world improvements
+- Business requirement
+- Folder structure
+- Data
+- PySpark code
+- Delta Lake
+- Snowflake loading
+- Airflow DAG
+- Power BI
 
 ## Project Overview
 
@@ -24,9 +22,9 @@ RetailMart has:
 Every night, each store sends its sales file.
 
 for examples,
-Store_001_2026-07-05.csv
-Store_002_2026-07-05.csv
-Store_003_2026-07-05.csv
+Store_001_2026-07-05.csv,
+Store_002_2026-07-05.csv,
+Store_003_2026-07-05.csv,
 ...
 Store_500_2026-07-05.csv
 
@@ -216,6 +214,10 @@ retail-sales-data/
 
 ## Basic Validation
 always validates before processing. Check required columns.
+   1. Data Quality Enforcement (Delta Live Tables Expectations)
+   2. Schema Enforcement & Evolution (Delta Lake Layer)
+   3. Structural Constraints (Delta Table Constraints)
+   4. Third-party Advanced Programmatic Validation (Great Expectations / Pandera)
 
 ## Airflow Scheduling
 ```text
@@ -231,6 +233,32 @@ Run pipeline
 
 Finish before 5 AM
 ```
+## End-to-End Airflow Orchestration Architecture
+
+```text
+ [Midnight (00:00)] 
+                              │
+                              ▼ (Triggers Airflow DAG)
+                  ┌───────────────────────┐
+                  │   S3KeySensor Task    │ ◄── Wires into s3://.../year=2026/...
+                  └───────────┬───────────┘
+                              │
+                              ▼ (File Detected)
+                  ┌───────────────────────┐
+                  │ DatabricksSubmitJob   │
+                  └───────────┬───────────┘
+                              │
+                              ▼ (Triggers Multi-Task Workflow / Notebook)
+ ┌─────────────────────────────────────────────────────────────────────────┐
+ │                       Databricks Medallion Core                         │
+ │                                                                         │
+ │  ┌─────────────────┐       ┌─────────────────┐       ┌───────────────┐  │
+ │  │  Bronze Layer   │ ────> │  Silver Layer   │ ────> │  Gold Layer   │  │
+ │  │  (Raw Parquet)  │       │ (Clean/Indexed) │       │ (Aggregated)  │  │
+ │  └─────────────────┘       └─────────────────┘       └───────────────┘  │
+ └─────────────────────────────────────────────────────────────────────────┘
+```
+The Airflow DAG is configured with cron job schedule="0 0 * * *" to trigger precisely at midnight. It implements an S3KeySensor to handle variable delivery times.
 
 ## Power BI
 Bussiness Dashboard
@@ -288,19 +316,19 @@ PySpark reads CSV
 
 12:45 AM
 
-Cleaning
+Data Validation & Cleaning(Bronz Layer)
 
 ↓
 
 1:15 AM
 
-Transformations
+Transformations(Silver Layer)
 
 ↓
 
 2:00 AM
 
-Delta Lake
+Delta Lake(Gold Layer)
 
 ↓
 
