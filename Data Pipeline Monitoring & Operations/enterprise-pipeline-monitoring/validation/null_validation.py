@@ -1,224 +1,248 @@
 """
 ===============================================================================
-File Name : null_validation.py
 
-Description:
-    Performs NULL validation on mandatory columns of the Sales dataset.
+File Name   : null_validation.py
 
-Business Purpose:
-    NULL values in mandatory business columns can lead to
-    incorrect reporting, failed joins, inaccurate aggregations,
-    and downstream ETL failures.
+Description :
+Enterprise NULL Validation Module.
 
-Validation Rules
-----------------
-✔ Mandatory columns cannot contain NULL values
-✔ Generates rejected records
-✔ Produces validation statistics
-✔ Logs detailed execution information
+Performs:
 
-Author:
-    Enterprise Data Engineering Team
+• NULL Count Validation
+• NULL Percentage Validation
+• Mandatory Column Validation
+• Threshold Validation
+• Detailed NULL Report
 
-Version:
-    1.0
+Author      : Enterprise Data Engineering Team
+
+Version     : 2.0
+
 ===============================================================================
 """
 
-from pathlib import Path
-import pandas as pd
-
-from utils.logger import logger
-from utils.config_loader import load_config
-
-from validation.validation_constants import NON_NULL_COLUMNS
+from pyspark.sql.functions import col
 
 from validation.validation_utils import (
-    load_csv,
-    validation_success,
-    validation_failure
+    build_validation_result,
+    calculate_percentage
 )
 
-
 # =============================================================================
-# Helper Functions
+# Column-Level NULL Thresholds
 # =============================================================================
 
-def get_mandatory_columns():
+NULL_THRESHOLDS = {
+
+    "sale_id": 0,
+
+    "store_id": 0,
+
+    "customer_id": 0,
+
+    "product_id": 0,
+
+    "sale_date": 0,
+
+    "quantity": 0,
+
+    "price": 0,
+
+    "sales_amount": 0
+
+}
+
+
+class NullValidation:
+
     """
-    Returns mandatory columns for Sales dataset.
+    Enterprise NULL validation.
     """
 
-    return NON_NULL_COLUMNS["sales"]
+    def __init__(self, dataframe):
 
+        self.df = dataframe
 
-def calculate_null_statistics(df, columns):
-    """
-    Calculates NULL statistics.
+        self.total_records = dataframe.count()
 
-    Parameters
-    ----------
-    df : DataFrame
+        self.validation_summary = []
 
-    columns : list
+    # =========================================================================
+    # NULL Count
+    # =========================================================================
 
-    Returns
-    -------
-    DataFrame
-    """
+    def get_null_count(self, column_name):
 
-    statistics = []
+        return (
 
-    total_records = len(df)
+            self.df
 
-    for column in columns:
+            .filter(
 
-        null_count = df[column].isnull().sum()
+                col(column_name).isNull()
 
-        percentage = round((null_count / total_records) * 100, 2)
+            )
 
-        statistics.append({
+            .count()
 
-            "Column": column,
+        )
 
-            "Null Count": null_count,
+    # =========================================================================
+    # Validate One Column
+    # =========================================================================
 
-            "Null Percentage": percentage
+    def validate_column(self, column_name):
+
+        null_count = self.get_null_count(column_name)
+
+        null_percentage = calculate_percentage(
+
+            null_count,
+
+            self.total_records
+
+        )
+
+        threshold = NULL_THRESHOLDS.get(
+
+            column_name,
+
+            100
+
+        )
+
+        status = "PASS"
+
+        if null_percentage > threshold:
+
+            status = "FAIL"
+
+        self.validation_summary.append({
+
+            "column": column_name,
+
+            "null_count": null_count,
+
+            "null_percentage": null_percentage,
+
+            "allowed_percentage": threshold,
+
+            "status": status
 
         })
 
-    return pd.DataFrame(statistics)
+    # =========================================================================
+    # Validate All Columns
+    # =========================================================================
 
+    def validate_all_columns(self):
 
-# =============================================================================
-# Main Validation
-# =============================================================================
+        for column_name in self.df.columns:
 
-def null_validation():
+            self.validate_column(column_name)
 
-    logger.info("=" * 80)
-    logger.info("Starting NULL Validation")
-    logger.info("=" * 80)
+    # =========================================================================
+    # Print Validation Report
+    # =========================================================================
 
-    config = load_config()
+    def print_report(self):
 
-    sales_file = (
-        Path(config["landing_path"])
-        / "sales"
-        / "sales_2026-07-01.csv"
-    )
+        print("=" * 100)
 
-    if not sales_file.exists():
+        print("NULL Validation Report")
 
-        raise FileNotFoundError(
-            f"{sales_file} not found."
+        print("=" * 100)
+
+        print(
+
+            f"{'Column':20}"
+
+            f"{'NULLs':>10}"
+
+            f"{'NULL %':>12}"
+
+            f"{'Allowed %':>12}"
+
+            f"{'Status':>12}"
+
         )
 
-    df = load_csv(str(sales_file))
+        print("-" * 100)
 
-    total_records = len(df)
+        for row in self.validation_summary:
 
-    mandatory_columns = get_mandatory_columns()
+            print(
 
-    logger.info(f"Total Records : {total_records}")
+                f"{row['column']:20}"
 
-    logger.info(
-        f"Mandatory Columns : {mandatory_columns}"
-    )
+                f"{row['null_count']:>10}"
 
-    # -------------------------------------------------------------------------
-    # NULL Statistics
-    # -------------------------------------------------------------------------
+                f"{row['null_percentage']:>12.2f}"
 
-    statistics = calculate_null_statistics(
-        df,
-        mandatory_columns
-    )
+                f"{row['allowed_percentage']:>12}"
 
-    logger.info("NULL Statistics")
+                f"{row['status']:>12}"
 
-    logger.info("\n" + statistics.to_string(index=False))
+            )
 
-    # -------------------------------------------------------------------------
-    # Find Invalid Records
-    # -------------------------------------------------------------------------
+        print("=" * 100)
 
-    invalid_records = df[
-        df[mandatory_columns].isnull().any(axis=1)
-    ]
+    # =========================================================================
+    # Validation Result
+    # =========================================================================
 
-    failed_records = len(invalid_records)
+    def has_failures(self):
 
-    # -------------------------------------------------------------------------
-    # SUCCESS
-    # -------------------------------------------------------------------------
+        return any(
 
-    if failed_records == 0:
+            row["status"] == "FAIL"
 
-        logger.info(
-            "NULL Validation Successful."
+            for row in self.validation_summary
+
         )
 
-        return validation_success(
+    # =========================================================================
+    # Main Validation
+    # =========================================================================
+
+    def validate(self):
+
+        self.validate_all_columns()
+
+        self.print_report()
+
+        failed_columns = [
+
+            row
+
+            for row in self.validation_summary
+
+            if row["status"] == "FAIL"
+
+        ]
+
+        if failed_columns:
+
+            raise Exception(
+
+                f"NULL validation failed for "
+
+                f"{len(failed_columns)} column(s)."
+
+            )
+
+        return build_validation_result(
 
             validation_name="NULL Validation",
 
-            total_records=total_records,
+            status="SUCCESS",
 
-            message="No NULL values found in mandatory columns."
+            records_checked=self.total_records,
+
+            failed_records=0,
+
+            execution_time=0,
+
+            message="NULL validation successful."
 
         )
-
-    # -------------------------------------------------------------------------
-    # FAILURE
-    # -------------------------------------------------------------------------
-
-    logger.error(
-        f"NULL Validation Failed. "
-        f"{failed_records} invalid records detected."
-    )
-
-    result = validation_failure(
-
-        validation_name="NULL Validation",
-
-        total_records=total_records,
-
-        failed_records=failed_records,
-
-        failed_df=invalid_records,
-
-        message=f"{failed_records} records contain NULL values."
-
-    )
-
-    # Save NULL statistics
-
-    statistics.to_csv(
-
-        "validation/reports/null_statistics.csv",
-
-        index=False
-
-    )
-
-    raise Exception(result.message)
-
-
-# =============================================================================
-# Local Testing
-# =============================================================================
-
-if __name__ == "__main__":
-
-    try:
-
-        result = null_validation()
-
-        print(result)
-
-    except Exception as ex:
-
-        logger.exception(ex)
-
-        raise
