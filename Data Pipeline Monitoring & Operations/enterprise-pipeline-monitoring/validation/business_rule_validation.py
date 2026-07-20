@@ -1,204 +1,219 @@
 """
 ===============================================================================
-File Name : business_rule_validation.py
 
-Description:
-    Performs Business Rule Validation on Sales dataset.
+File Name   : business_validation.py
 
-Business Rules
---------------
-1. Quantity must be greater than zero
-2. Price must be greater than zero
-3. Sale Date cannot be a future date
+Description :
+Enterprise Business Rule Validation Module.
 
-Author:
-Enterprise Data Engineering Team
+Performs:
 
-Version:
-1.0
+• Quantity Validation
+• Price Validation
+• Revenue Validation
+• Future Date Validation
+• Business Rule Reporting
+
+Author      : Enterprise Data Engineering Team
+
+Version     : 2.0
+
 ===============================================================================
 """
 
-from pathlib import Path
-from datetime import datetime
-
-import pandas as pd
-
-from utils.logger import logger
-from utils.config_loader import load_config
+from pyspark.sql.functions import (
+    col,
+    current_date,
+    round
+)
 
 from validation.validation_utils import (
-    load_csv,
-    validation_success,
-    validation_failure
+    build_validation_result
+)
+
+from validation.validation_config import (
+    business
 )
 
 
-# ==============================================================================
-# BUSINESS RULE FUNCTIONS
-# ==============================================================================
+class BusinessValidation:
 
-def validate_quantity(df: pd.DataFrame) -> pd.DataFrame:
     """
-    Quantity must be greater than zero.
-    """
-    return df[df["quantity"] <= 0]
-
-
-def validate_price(df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Price must be greater than zero.
-    """
-    return df[df["price"] <= 0]
-
-
-def validate_future_date(df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Sale date should not be greater than today's date.
+    Enterprise Business Validation.
     """
 
-    working_df = df.copy()
+    def __init__(self, dataframe):
 
-    working_df["sale_date"] = pd.to_datetime(
-        working_df["sale_date"],
-        errors="coerce"
-    )
+        self.df = dataframe
 
-    today = pd.Timestamp(datetime.today().date())
+        self.total_records = dataframe.count()
 
-    return working_df[
-        working_df["sale_date"] > today
-    ]
+        self.failed_records = 0
 
+    # =====================================================================
+    # Quantity Validation
+    # =====================================================================
 
-# ==============================================================================
-# MAIN VALIDATION
-# ==============================================================================
+    def validate_quantity(self):
 
-def business_validation():
+        invalid = (
 
-    logger.info("=" * 80)
-    logger.info("Starting Business Rule Validation")
-    logger.info("=" * 80)
+            self.df
 
-    config = load_config()
+            .filter(
 
-    sales_file = (
-        Path(config["landing_path"])
-        / "sales"
-        / "sales_2026-07-01.csv"
-    )
+                col("quantity") < business.MIN_QUANTITY
 
-    if not sales_file.exists():
-        raise FileNotFoundError(f"{sales_file} not found.")
-
-    df = load_csv(str(sales_file))
-
-    total_records = len(df)
-
-    logger.info(f"Total Records : {total_records}")
-
-    # --------------------------------------------------------------------------
-    # Rule 1
-    # --------------------------------------------------------------------------
-
-    invalid_quantity = validate_quantity(df)
-
-    logger.info(
-        f"Quantity Validation Failed Records : {len(invalid_quantity)}"
-    )
-
-    # --------------------------------------------------------------------------
-    # Rule 2
-    # --------------------------------------------------------------------------
-
-    invalid_price = validate_price(df)
-
-    logger.info(
-        f"Price Validation Failed Records : {len(invalid_price)}"
-    )
-
-    # --------------------------------------------------------------------------
-    # Rule 3
-    # --------------------------------------------------------------------------
-
-    invalid_date = validate_future_date(df)
-
-    logger.info(
-        f"Future Date Validation Failed Records : {len(invalid_date)}"
-    )
-
-    # --------------------------------------------------------------------------
-    # Combine Invalid Records
-    # --------------------------------------------------------------------------
-
-    invalid_records = pd.concat(
-        [
-            invalid_quantity,
-            invalid_price,
-            invalid_date
-        ]
-    ).drop_duplicates()
-
-    failed_records = len(invalid_records)
-
-    # --------------------------------------------------------------------------
-    # SUCCESS
-    # --------------------------------------------------------------------------
-
-    if failed_records == 0:
-
-        logger.info("Business Rule Validation Successful.")
-
-        return validation_success(
-
-            validation_name="Business Rule Validation",
-
-            total_records=total_records,
-
-            message="All business rules passed."
+            )
 
         )
 
-    # --------------------------------------------------------------------------
-    # FAILURE
-    # --------------------------------------------------------------------------
+        count = invalid.count()
 
-    logger.error(
-        f"{failed_records} business rule violations found."
-    )
+        if count > 0:
 
-    result = validation_failure(
+            print(f"Invalid Quantity Records : {count}")
 
-        validation_name="Business Rule Validation",
+        self.failed_records += count
 
-        total_records=total_records,
+    # =====================================================================
+    # Price Validation
+    # =====================================================================
 
-        failed_records=failed_records,
+    def validate_price(self):
 
-        failed_df=invalid_records,
+        invalid = (
 
-        message=f"{failed_records} business rule violations found."
+            self.df
 
-    )
+            .filter(
 
-    raise Exception(result.message)
+                (col("price") < business.MIN_PRICE)
 
+                |
 
-# ==============================================================================
-# LOCAL TESTING
-# ==============================================================================
+                (col("price") > business.MAX_PRICE)
 
-if __name__ == "__main__":
+            )
 
-    try:
+        )
 
-        result = business_validation()
+        count = invalid.count()
 
-        print(result)
+        if count > 0:
 
-    except Exception as ex:
+            print(f"Invalid Price Records : {count}")
 
-        logger.exception(ex)
+        self.failed_records += count
 
-        raise
+    # =====================================================================
+    # Sales Amount Validation
+    # =====================================================================
+
+    def validate_sales_amount(self):
+
+        invalid = (
+
+            self.df
+
+            .filter(
+
+                round(
+
+                    col("quantity") * col("price"),
+
+                    2
+
+                )
+
+                !=
+
+                round(
+
+                    col("sales_amount"),
+
+                    2
+
+                )
+
+            )
+
+        )
+
+        count = invalid.count()
+
+        if count > 0:
+
+            print(f"Invalid Revenue Records : {count}")
+
+        self.failed_records += count
+
+    # =====================================================================
+    # Future Date Validation
+    # =====================================================================
+
+    def validate_future_date(self):
+
+        if business.ALLOW_FUTURE_DATE:
+
+            return
+
+        invalid = (
+
+            self.df
+
+            .filter(
+
+                col("sale_date") > current_date()
+
+            )
+
+        )
+
+        count = invalid.count()
+
+        if count > 0:
+
+            print(f"Future Date Records : {count}")
+
+        self.failed_records += count
+
+    # =====================================================================
+    # Main Validation
+    # =====================================================================
+
+    def validate(self):
+
+        self.validate_quantity()
+
+        self.validate_price()
+
+        self.validate_sales_amount()
+
+        self.validate_future_date()
+
+        if self.failed_records > 0:
+
+            raise Exception(
+
+                f"Business Validation Failed. "
+
+                f"Invalid Records : {self.failed_records}"
+
+            )
+
+        return build_validation_result(
+
+            validation_name="Business Validation",
+
+            status="SUCCESS",
+
+            records_checked=self.total_records,
+
+            failed_records=0,
+
+            execution_time=0,
+
+            message="Business validation successful."
+
+        )
