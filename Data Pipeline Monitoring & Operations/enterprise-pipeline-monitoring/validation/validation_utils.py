@@ -1,94 +1,248 @@
-import pandas as pd
+"""
+===============================================================================
 
-from pathlib import Path
+File Name   : validation_utils.py
 
-from utils.logger import logger
+Description :
+Reusable utility functions for the Enterprise Data Validation Framework.
 
-from validation.validation_result import ValidationResult
+These utilities are shared across all validation modules.
+
+Author      : Enterprise Data Engineering Team
+
+Version     : 2.0
+
+===============================================================================
+"""
+
+import time
+import os
+from datetime import datetime
+
+from pyspark.sql.functions import col
 
 
-def load_csv(file_path: str) -> pd.DataFrame:
+# =============================================================================
+# Timer Utilities
+# =============================================================================
+
+class ExecutionTimer:
     """
-    Load CSV safely.
+    Measures execution time for validation modules.
     """
 
-    logger.info(f"Loading file : {file_path}")
+    def __init__(self):
 
-    return pd.read_csv(file_path)
+        self.start_time = None
+
+        self.end_time = None
+
+    def start(self):
+
+        self.start_time = time.time()
+
+    def stop(self):
+
+        self.end_time = time.time()
+
+        return round(
+
+            self.end_time - self.start_time,
+
+            2
+
+        )
 
 
-def save_bad_records(df, file_name):
+# =============================================================================
+# DataFrame Utilities
+# =============================================================================
+
+def get_record_count(df):
     """
-    Save rejected records.
+    Returns DataFrame row count.
     """
 
-    reject_path = Path("validation/reports/rejected")
-
-    reject_path.mkdir(parents=True, exist_ok=True)
-
-    output = reject_path / file_name
-
-    df.to_csv(output, index=False)
-
-    logger.info(f"Rejected records saved -> {output}")
+    return df.count()
 
 
-def validation_success(
-        validation_name,
-        total_records,
-        message):
+def get_column_count(df):
+    """
+    Returns number of columns.
+    """
 
-    logger.info(message)
+    return len(df.columns)
 
-    return ValidationResult(
 
-        validation_name=validation_name,
+def dataframe_is_empty(df):
+    """
+    Returns True if DataFrame is empty.
+    """
 
-        status="SUCCESS",
+    return df.rdd.isEmpty()
 
-        total_records=total_records,
 
-        failed_records=0,
+# =============================================================================
+# Percentage Utility
+# =============================================================================
 
-        message=message
+def calculate_percentage(part, total):
+    """
+    Calculates percentage safely.
+    """
+
+    if total == 0:
+
+        return 0.0
+
+    return round(
+
+        (part / total) * 100,
+
+        2
 
     )
 
 
-def validation_failure(
+# =============================================================================
+# Duplicate Utility
+# =============================================================================
 
+def get_duplicate_count(df, key_columns):
+    """
+    Returns duplicate record count.
+    """
+
+    duplicate_df = (
+
+        df.groupBy(key_columns)
+
+        .count()
+
+        .filter(col("count") > 1)
+
+    )
+
+    return duplicate_df.count()
+
+
+# =============================================================================
+# Null Utility
+# =============================================================================
+
+def get_null_count(df, column_name):
+    """
+    Returns NULL count for a column.
+    """
+
+    return (
+
+        df.filter(
+
+            col(column_name).isNull()
+
+        ).count()
+
+    )
+
+
+# =============================================================================
+# File Utilities
+# =============================================================================
+
+def file_exists(path):
+    """
+    Checks if local file exists.
+
+    NOTE:
+    In production, use DBUtils or S3 APIs.
+    """
+
+    return os.path.exists(path)
+
+
+def get_file_size(path):
+    """
+    Returns file size in bytes.
+    """
+
+    if not os.path.exists(path):
+
+        return 0
+
+    return os.path.getsize(path)
+
+
+# =============================================================================
+# Date Utility
+# =============================================================================
+
+def current_timestamp():
+
+    return datetime.now()
+
+
+def current_date():
+
+    return datetime.now().date()
+
+
+# =============================================================================
+# Validation Result Helper
+# =============================================================================
+
+def build_validation_result(
         validation_name,
-
-        total_records,
-
+        status,
+        records_checked,
         failed_records,
+        execution_time,
+        message
+):
+    """
+    Standard validation result dictionary.
+    """
 
-        failed_df,
+    return {
 
-        message):
+        "validation_name": validation_name,
 
-    save_bad_records(
+        "status": status,
 
-        failed_df,
+        "records_checked": records_checked,
 
-        validation_name.lower().replace(" ", "_") + ".csv"
+        "failed_records": failed_records,
 
-    )
+        "execution_time_seconds": execution_time,
 
-    logger.error(message)
+        "message": message,
 
-    return ValidationResult(
+        "timestamp": str(current_timestamp())
 
-        validation_name=validation_name,
+    }
 
-        status="FAILED",
 
-        total_records=total_records,
+# =============================================================================
+# Pretty Printer
+# =============================================================================
 
-        failed_records=failed_records,
+def print_validation_summary(result):
+    """
+    Prints validation result in a readable format.
+    """
 
-        message=message,
+    print("=" * 80)
 
-        failed_rows=list(failed_df.index)
+    print(f"Validation : {result['validation_name']}")
 
-    )
+    print(f"Status     : {result['status']}")
+
+    print(f"Checked    : {result['records_checked']}")
+
+    print(f"Failed     : {result['failed_records']}")
+
+    print(f"Duration   : {result['execution_time_seconds']} sec")
+
+    print(f"Message    : {result['message']}")
+
+    print("=" * 80)
