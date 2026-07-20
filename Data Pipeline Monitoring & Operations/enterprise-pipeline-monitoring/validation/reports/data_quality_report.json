@@ -1,0 +1,12 @@
+[
+    {
+        "Validation Name":"File Validation",
+        "Status":"SUCCESS",
+        "Failed Records":0
+    },
+    {
+        "Validation Name":"Duplicate Validation",
+        "Status":"FAILED",
+        "Failed Records":15
+    }
+]
