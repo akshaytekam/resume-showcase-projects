@@ -88,45 +88,78 @@ Grafana
 Git
 
 ## Project Folder:
-
+We'll create a production-style repository like this:
 ```text
-PipelineMonitoring/
-
+enterprise-pipeline-monitoring/
 │
-├── airflow_dags/
-│      monitor_pipeline.py
-│
-├── validation/
-│      validate_sales.py
-│      validate_customer.py
-│      duplicate_check.py
-│      file_check.py
-│
-├── notebooks/
-│      bronze.py
-│      silver.py
-│      gold.py
-│
-├── monitoring/
-│      metrics.py
-│      sla.py
-│      alert.py
-│
-├── reports/
-│      execution_report.sql
-│      dashboard.sql
+├── README.md
+├── requirements.txt
+├── .gitignore
+├── docker-compose.yml
+├── config/
+│   ├── config.json
+│   └── email_config.json
 │
 ├── datasets/
-│      sales/
-│      customer/
-│      inventory/
+│   ├── sales/
+│   ├── customers/
+│   ├── products/
+│   └── inventory/
+│
+├── airflow/
+│   ├── dags/
+│   │   └── enterprise_pipeline_monitor.py
+│   ├── plugins/
+│   └── requirements.txt
+│
+├── validation/
+│   ├── file_arrival_validation.py
+│   ├── schema_validation.py
+│   ├── duplicate_validation.py
+│   ├── null_validation.py
+│   ├── business_rule_validation.py
+│   ├── foreign_key_validation.py
+│   ├── primary_key_validation.py
+│   ├── data_quality_report.py
+│   └── validation_utils.py
+│
+├── databricks/
+│   ├── bronze_load.py
+│   ├── silver_transform.py
+│   ├── gold_load.py
+│   ├── dq_checks.py
+│   ├── monitoring_metrics.py
+│   └── notebook_runner.py
+│
+├── monitoring/
+│   ├── sla_monitor.py
+│   ├── execution_logger.py
+│   ├── cloudwatch_metrics.py
+│   ├── grafana_metrics.py
+│   ├── alert_manager.py
+│   ├── email_alert.py
+│   ├── incident_logger.py
+│   └── pipeline_health.py
+│
+├── sql/
+│   ├── monitoring_tables.sql
+│   ├── execution_reports.sql
+│   ├── failed_jobs.sql
+│   ├── sla_report.sql
+│   ├── dashboard_queries.sql
+│   └── root_cause_queries.sql
+│
+├── reports/
+│   ├── daily_report.py
+│   ├── weekly_report.py
+│   └── monthly_report.py
 │
 ├── logs/
 │
-├── config/
-│      config.json
-│
-└── README.md
+└── docs/
+    ├── Architecture.png
+    ├── Workflow.png
+    └── SOP.md
 ```
 
 ## Data Flow:
@@ -210,5 +243,17 @@ Generate Metrics
 
 Email
 ```
+
+## We'll also build the monitoring components
+Airflow DAG with retries, SLAs, sensors, email alerts, and dependencies
+Databricks Bronze → Silver → Gold notebooks
+Python validation framework
+SQL monitoring tables
+CloudWatch metrics integration
+Grafana dashboard queries
+Incident logging
+Root Cause Analysis (RCA) reports
+Operational reports
+Production support documentation
 If any file is missing, Airflow should fail immediately.
 
