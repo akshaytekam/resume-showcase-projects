@@ -1,154 +1,175 @@
 """
 ===============================================================================
-File Name : duplicate_validation.py
 
-Description:
-    This module validates duplicate records in the input dataset.
+File Name   : duplicate_validation.py
 
-Business Purpose:
-    Duplicate records can lead to incorrect aggregations,
-    inaccurate reporting, duplicate customer billing,
-    duplicate order processing, and inconsistent analytics.
+Description :
+Enterprise Duplicate Validation Module.
 
-    This validation checks:
+Performs:
 
-        ✓ Complete duplicate rows
-        ✓ Duplicate Primary Keys
+• Duplicate Record Detection
+• Business Key Validation
+• Duplicate Percentage Validation
+• Threshold Validation
+• Duplicate Report Generation
 
-Author:
-    Enterprise Data Engineering Team
+Author      : Enterprise Data Engineering Team
 
-Version:
-    1.0
+Version     : 2.0
+
 ===============================================================================
 """
 
-from pathlib import Path
-import pandas as pd
+from pyspark.sql.functions import col, count
 
-from utils.logger import logger
-from utils.config_loader import load_config
-
-from validation.validation_constants import PRIMARY_KEYS
 from validation.validation_utils import (
-    load_csv,
-    validation_success,
-    validation_failure,
+    build_validation_result,
+    calculate_percentage
+)
+
+from validation.validation_config import (
+    schema,
+    threshold
 )
 
 
-def duplicate_validation():
+class DuplicateValidation:
+
     """
-    Executes duplicate validation on Sales dataset.
-
-    Returns
-    -------
-    ValidationResult
-        SUCCESS if no duplicates found
-
-    Raises
-    ------
-    Exception
-        If duplicate records exist.
+    Enterprise Duplicate Validation.
     """
 
-    logger.info("=" * 80)
-    logger.info("Starting Duplicate Validation")
-    logger.info("=" * 80)
+    def __init__(self, dataframe):
 
-    config = load_config()
+        self.df = dataframe
 
-    sales_file = (
-        Path(config["landing_path"])
-        / "sales"
-        / "sales_2026-07-01.csv"
-    )
+        self.total_records = dataframe.count()
 
-    if not sales_file.exists():
-        raise FileNotFoundError(f"{sales_file} not found.")
+        self.business_keys = schema.PRIMARY_KEY
 
-    df = load_csv(str(sales_file))
+    # =========================================================================
+    # Find Duplicate Records
+    # =========================================================================
 
-    total_records = len(df)
+    def get_duplicate_dataframe(self):
 
-    logger.info(f"Total Records : {total_records}")
+        duplicate_df = (
 
-    # -------------------------------------------------------------------------
-    # STEP 1 : Complete Duplicate Rows
-    # -------------------------------------------------------------------------
+            self.df
 
-    duplicate_rows = df[df.duplicated(keep=False)]
+            .groupBy(*self.business_keys)
 
-    duplicate_row_count = len(duplicate_rows)
+            .agg(
 
-    logger.info(f"Duplicate Rows Found : {duplicate_row_count}")
+                count("*").alias("duplicate_count")
 
-    # -------------------------------------------------------------------------
-    # STEP 2 : Duplicate Primary Keys
-    # -------------------------------------------------------------------------
+            )
 
-    pk_columns = PRIMARY_KEYS["sales"]
+            .filter(
 
-    duplicate_pk = df[df.duplicated(subset=pk_columns, keep=False)]
+                col("duplicate_count") > 1
 
-    duplicate_pk_count = len(duplicate_pk)
+            )
 
-    logger.info(f"Duplicate Primary Keys : {duplicate_pk_count}")
-
-    # -------------------------------------------------------------------------
-    # Merge Duplicate Records
-    # -------------------------------------------------------------------------
-
-    duplicate_records = pd.concat(
-        [duplicate_rows, duplicate_pk]
-    ).drop_duplicates()
-
-    failed_records = len(duplicate_records)
-
-    # -------------------------------------------------------------------------
-    # SUCCESS
-    # -------------------------------------------------------------------------
-
-    if failed_records == 0:
-
-        logger.info("Duplicate Validation Successful.")
-
-        return validation_success(
-            validation_name="Duplicate Validation",
-            total_records=total_records,
-            message="No duplicate records found."
         )
 
-    # -------------------------------------------------------------------------
-    # FAILURE
-    # -------------------------------------------------------------------------
+        return duplicate_df
 
-    logger.error(
-        f"Duplicate Validation Failed. "
-        f"{failed_records} duplicate records detected."
-    )
+    # =========================================================================
+    # Duplicate Count
+    # =========================================================================
 
-    result = validation_failure(
-        validation_name="Duplicate Validation",
-        total_records=total_records,
-        failed_records=failed_records,
-        failed_df=duplicate_records,
-        message=f"{failed_records} duplicate records found."
-    )
+    def get_duplicate_count(self):
 
-    raise Exception(result.message)
+        duplicate_df = self.get_duplicate_dataframe()
 
+        return duplicate_df.count()
 
-if __name__ == "__main__":
+    # =========================================================================
+    # Duplicate Percentage
+    # =========================================================================
 
-    try:
+    def get_duplicate_percentage(self):
 
-        result = duplicate_validation()
+        duplicate_count = self.get_duplicate_count()
 
-        print(result)
+        return calculate_percentage(
 
-    except Exception as ex:
+            duplicate_count,
 
-        logger.exception(ex)
+            self.total_records
 
-        raise
+        )
+
+    # =========================================================================
+    # Print Duplicate Report
+    # =========================================================================
+
+    def print_report(self):
+
+        duplicate_df = self.get_duplicate_dataframe()
+
+        print("=" * 100)
+
+        print("Duplicate Validation Report")
+
+        print("=" * 100)
+
+        duplicate_df.show(
+
+            truncate=False
+
+        )
+
+        print("=" * 100)
+
+    # =========================================================================
+    # Threshold Validation
+    # =========================================================================
+
+    def validate_threshold(self):
+
+        duplicate_percentage = self.get_duplicate_percentage()
+
+        if duplicate_percentage > threshold.MAX_DUPLICATE_PERCENTAGE:
+
+            raise Exception(
+
+                f"Duplicate percentage "
+
+                f"{duplicate_percentage}% "
+
+                f"exceeds allowed "
+
+                f"{threshold.MAX_DUPLICATE_PERCENTAGE}%"
+
+            )
+
+    # =========================================================================
+    # Main Validation
+    # =========================================================================
+
+    def validate(self):
+
+        duplicate_count = self.get_duplicate_count()
+
+        self.print_report()
+
+        self.validate_threshold()
+
+        return build_validation_result(
+
+            validation_name="Duplicate Validation",
+
+            status="SUCCESS",
+
+            records_checked=self.total_records,
+
+            failed_records=duplicate_count,
+
+            execution_time=0,
+
+            message="Duplicate validation successful."
+
+        )
