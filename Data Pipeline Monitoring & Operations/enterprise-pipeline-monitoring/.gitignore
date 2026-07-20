@@ -1,0 +1,34 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Virtual Environment
+venv/
+.env/
+
+# Airflow
+airflow/logs/
+airflow/airflow.db
+
+# Logs
+logs/
+*.log
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Spark
+metastore_db/
+spark-warehouse/
+
+# Temporary
+*.tmp
+
+# Secrets
+config/secrets.json
