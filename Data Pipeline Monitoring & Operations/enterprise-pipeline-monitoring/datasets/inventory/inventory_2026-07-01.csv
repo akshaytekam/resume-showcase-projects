@@ -1,0 +1,6 @@
+product_id,store_id,available_stock
+P1001,S001,25
+P1002,S001,100
+P1003,S002,50
+P1004,S003,30
+P1005,S001,15
