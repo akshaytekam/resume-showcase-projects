@@ -1,0 +1,9 @@
+| Validation | Status  | Failed |
+| ---------- | ------- | ------ |
+| File       | SUCCESS | 0      |
+| Schema     | SUCCESS | 0      |
+| Duplicate  | FAILED  | 15     |
+| NULL       | SUCCESS | 0      |
+| PK         | FAILED  | 8      |
+| FK         | SUCCESS | 0      |
+| Business   | SUCCESS | 0      |
