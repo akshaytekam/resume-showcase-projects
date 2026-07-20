@@ -1,220 +1,335 @@
 """
 ===============================================================================
-File Name : data_quality_report.py
 
-Description:
-    Generates consolidated Data Quality Reports after executing
-    all validations.
+File Name   : quality_report.py
 
-Business Purpose
-----------------
-Provides a centralized report containing:
+Description :
+Enterprise Data Quality Reporting Framework.
 
-✓ Validation Summary
-✓ Success Count
-✓ Failure Count
-✓ Success Percentage
-✓ Pipeline Status
-✓ CSV Report
-✓ JSON Report
+Generates
 
-Author:
+• Validation Summary
+• Data Quality Score
+• Execution Summary
+• Failed Validation Summary
+• CSV Report
+• Delta Audit Report
+• Future Dashboard Integration
+
+Author
+------
 Enterprise Data Engineering Team
 
-Version:
+Version
+-------
 2.0
+
 ===============================================================================
 """
 
-from pathlib import Path
+import os
+
 from datetime import datetime
-import json
 
-import pandas as pd
+from pyspark.sql import Row
 
-from utils.logger import logger
+from validation.validation_config import (
+    storage
+)
 
 
-class DataQualityReport:
+# =============================================================================
+# Quality Report
+# =============================================================================
 
-    def __init__(self):
+class QualityReport:
 
-        self.results = []
+    """
+    Enterprise Data Quality Report
+    """
 
-        self.report_directory = Path("validation/reports")
+    def __init__(
 
-        self.report_directory.mkdir(
-            parents=True,
-            exist_ok=True
-        )
+            self,
 
-    # -------------------------------------------------------------------------
+            spark,
 
-    def add_result(self, validation_result):
+            validation_results
 
-        self.results.append(validation_result)
+    ):
 
-    # -------------------------------------------------------------------------
+        self.spark = spark
 
-    def build_dataframe(self):
+        self.results = validation_results
 
-        report = []
+    # =========================================================================
+    # Overall Score
+    # =========================================================================
 
-        for item in self.results:
+    def calculate_quality_score(self):
 
-            report.append({
+        total = len(self.results)
 
-                "Validation Name": item.validation_name,
+        passed = len(
 
-                "Status": item.status,
+            [
 
-                "Total Records": item.total_records,
+                x
 
-                "Failed Records": item.failed_records,
+                for x in self.results
 
-                "Message": item.message,
+                if x["status"] == "SUCCESS"
 
-                "Execution Time": item.execution_time
-
-            })
-
-        return pd.DataFrame(report)
-
-    # -------------------------------------------------------------------------
-
-    def generate_csv(self):
-
-        dataframe = self.build_dataframe()
-
-        csv_path = self.report_directory / "data_quality_report.csv"
-
-        dataframe.to_csv(
-            csv_path,
-            index=False
-        )
-
-        logger.info(f"CSV Report Generated : {csv_path}")
-
-        return dataframe
-
-    # -------------------------------------------------------------------------
-
-    def generate_json(self):
-
-        dataframe = self.build_dataframe()
-
-        json_path = self.report_directory / "data_quality_report.json"
-
-        dataframe.to_json(
-
-            json_path,
-
-            orient="records",
-
-            indent=4
+            ]
 
         )
 
-        logger.info(f"JSON Report Generated : {json_path}")
+        if total == 0:
 
-    # -------------------------------------------------------------------------
+            return 0
 
-    def generate_summary(self):
+        return round(
 
-        passed = 0
+            (passed / total) * 100,
 
-        failed = 0
+            2
+
+        )
+
+    # =========================================================================
+    # Overall Status
+    # =========================================================================
+
+    def overall_status(self):
+
+        failed = [
+
+            x
+
+            for x in self.results
+
+            if x["status"] == "FAILED"
+
+        ]
+
+        if len(failed) == 0:
+
+            return "SUCCESS"
+
+        return "FAILED"
+
+    # =========================================================================
+    # Console Report
+    # =========================================================================
+
+    def print_report(self):
+
+        print()
+
+        print("=" * 100)
+
+        print("ENTERPRISE DATA QUALITY REPORT")
+
+        print("=" * 100)
+
+        print(
+
+            f"{'Validation':30}"
+
+            f"{'Status':15}"
+
+            f"{'Execution(s)':15}"
+
+        )
+
+        print("-" * 100)
 
         for result in self.results:
 
-            if result.status.upper() == "SUCCESS":
+            print(
 
-                passed += 1
+                f"{result['validation_name']:30}"
 
-            else:
+                f"{result['status']:15}"
 
-                failed += 1
-
-        total = passed + failed
-
-        success_percentage = 0
-
-        if total > 0:
-
-            success_percentage = round(
-
-                (passed / total) * 100,
-
-                2
+                f"{result['execution_time']:>10.2f}"
 
             )
 
-        summary = {
+        print("-" * 100)
 
-            "Execution Time":
+        print(
 
-                datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            f"Overall Status : "
 
-            "Total Validations":
+            f"{self.overall_status()}"
 
-                total,
+        )
 
-            "Successful":
+        print(
 
-                passed,
+            f"Quality Score : "
 
-            "Failed":
+            f"{self.calculate_quality_score()}%"
 
-                failed,
+        )
 
-            "Success Percentage":
+        print("=" * 100)
 
-                success_percentage,
+    # =========================================================================
+    # CSV Report
+    # =========================================================================
 
-            "Pipeline Status":
+    def write_csv_report(
 
-                "SUCCESS" if failed == 0 else "FAILED"
+            self,
 
-        }
+            output_folder
 
-        summary_path = self.report_directory / "summary.json"
+    ):
 
-        with open(summary_path, "w") as file:
+        import pandas as pd
 
-            json.dump(
+        dataframe = pd.DataFrame(
 
-                summary,
+            self.results
 
-                file,
+        )
 
-                indent=4
+        file_name = (
+
+            f"quality_report_"
+
+            f"{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
+
+        )
+
+        path = os.path.join(
+
+            output_folder,
+
+            file_name
+
+        )
+
+        dataframe.to_csv(
+
+            path,
+
+            index=False
+
+        )
+
+        print(
+
+            f"CSV Report Saved : {path}"
+
+        )
+
+    # =========================================================================
+    # Delta Audit Table
+    # =========================================================================
+
+    def write_delta_report(self):
+
+        rows = [
+
+            Row(**row)
+
+            for row in self.results
+
+        ]
+
+        dataframe = self.spark.createDataFrame(
+
+            rows
+
+        )
+
+        (
+
+            dataframe.write
+
+            .format("delta")
+
+            .mode("append")
+
+            .save(
+
+                storage.QUALITY_REPORT_PATH
 
             )
 
-        logger.info(f"Summary Generated : {summary_path}")
+        )
 
-        return summary
+        print(
 
-    # -------------------------------------------------------------------------
+            "Delta Quality Report Saved."
 
-    def generate_reports(self):
+        )
 
-        self.generate_csv()
+    # =========================================================================
+    # Dashboard Hooks
+    # =========================================================================
 
-        self.generate_json()
+    def publish_cloudwatch(self):
 
-        summary = self.generate_summary()
+        """
+        Future CloudWatch Integration.
+        """
 
-        logger.info("=" * 80)
+        pass
 
-        logger.info("DATA QUALITY SUMMARY")
+    def publish_grafana(self):
 
-        logger.info("=" * 80)
+        """
+        Future Grafana Integration.
+        """
 
-        for key, value in summary.items():
+        pass
 
-            logger.info(f"{key} : {value}")
+    def send_email(self):
 
-        logger.info("=" * 80)
+        """
+        Future Email Summary.
+        """
 
-        return summary
+        pass
+
+    def send_slack(self):
+
+        """
+        Future Slack Notification.
+        """
+
+        pass
+
+    # =========================================================================
+    # Generate Report
+    # =========================================================================
+
+    def generate(
+
+            self,
+
+            output_folder
+
+    ):
+
+        self.print_report()
+
+        self.write_csv_report(
+
+            output_folder
+
+        )
+
+        self.write_delta_report()
+
+        self.publish_cloudwatch()
+
+        self.publish_grafana()
+
+        self.send_email()
+
+        self.send_slack()
