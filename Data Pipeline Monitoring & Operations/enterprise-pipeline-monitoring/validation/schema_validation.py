@@ -1,104 +1,245 @@
 """
 ===============================================================================
-schema_validation.py
 
-Description:
-    Validates dataset schema before loading into Bronze Layer.
+File Name   : schema_validation.py
 
-Checks
+Description :
+Enterprise Schema Validation Module.
 
-✓ Column Count
+Performs:
 
-✓ Column Names
+• Required Column Validation
+• Missing Column Validation
+• Unexpected Column Validation
+• Data Type Validation
+• Nullable Validation
+• Primary Key Validation
 
-✓ Missing Columns
+Author      : Enterprise Data Engineering Team
 
-✓ Unexpected Columns
+Version     : 2.0
 
 ===============================================================================
 """
 
-import pandas as pd
+from pyspark.sql.types import (
+    StringType,
+    IntegerType,
+    DoubleType,
+    DateType
+)
 
-from pathlib import Path
+from validation.validation_config import (
+    schema
+)
 
-from utils.logger import logger
-from utils.config_loader import load_config
-
-from validation.validation_constants import EXPECTED_SALES_COLUMNS
-
-from validation.validation_utils import validation_success
-from validation.validation_utils import validation_failure
+from validation.validation_utils import (
+    build_validation_result
+)
 
 
-def schema_validation():
+class SchemaValidation:
 
-    logger.info("=" * 80)
-    logger.info("Starting Schema Validation")
-    logger.info("=" * 80)
+    """
+    Validates DataFrame schema.
+    """
 
-    config = load_config()
+    def __init__(self, dataframe):
 
-    sales_file = Path(
-        config["landing_path"]
-    ) / "sales" / "sales_2026-07-01.csv"
+        self.df = dataframe
 
-    df = pd.read_csv(sales_file)
+        self.columns = dataframe.columns
 
-    actual_columns = list(df.columns)
+    # =========================================================================
+    # Required Columns
+    # =========================================================================
 
-    expected_columns = EXPECTED_SALES_COLUMNS
+    def validate_required_columns(self):
 
-    missing_columns = []
+        missing = [
 
-    unexpected_columns = []
+            column
 
-    for column in expected_columns:
+            for column in schema.REQUIRED_COLUMNS
 
-        if column not in actual_columns:
+            if column not in self.columns
 
-            missing_columns.append(column)
+        ]
 
-    for column in actual_columns:
+        if missing:
 
-        if column not in expected_columns:
+            raise Exception(
 
-            unexpected_columns.append(column)
+                f"Missing required columns : {missing}"
 
-    if len(missing_columns) == 0 and len(unexpected_columns) == 0:
+            )
 
-        logger.info("Schema Validation Successful.")
+    # =========================================================================
+    # Unexpected Columns
+    # =========================================================================
 
-        return validation_success(
+    def validate_unexpected_columns(self):
+
+        unexpected = [
+
+            column
+
+            for column in self.columns
+
+            if column not in schema.REQUIRED_COLUMNS
+
+        ]
+
+        if unexpected:
+
+            raise Exception(
+
+                f"Unexpected columns : {unexpected}"
+
+            )
+
+    # =========================================================================
+    # Primary Key Validation
+    # =========================================================================
+
+    def validate_primary_key(self):
+
+        for column in schema.PRIMARY_KEY:
+
+            if column not in self.columns:
+
+                raise Exception(
+
+                    f"Primary key missing : {column}"
+
+                )
+
+    # =========================================================================
+    # Data Type Validation
+    # =========================================================================
+
+    def validate_data_types(self):
+
+        expected_types = {
+
+            "sale_id": StringType,
+
+            "store_id": StringType,
+
+            "customer_id": StringType,
+
+            "product_id": StringType,
+
+            "sale_date": DateType,
+
+            "quantity": IntegerType,
+
+            "price": DoubleType,
+
+            "sales_amount": DoubleType
+
+        }
+
+        dataframe_schema = dict(self.df.dtypes)
+
+        for column, expected_type in expected_types.items():
+
+            actual_type = dataframe_schema.get(column)
+
+            if actual_type is None:
+
+                continue
+
+            expected = expected_type().simpleString()
+
+            if actual_type != expected:
+
+                raise Exception(
+
+                    f"{column} datatype mismatch "
+
+                    f"Expected={expected} "
+
+                    f"Actual={actual_type}"
+
+                )
+
+    # =========================================================================
+    # Nullable Validation
+    # =========================================================================
+
+    def validate_nullable(self):
+
+        nullable_columns = [
+
+            field.name
+
+            for field in self.df.schema.fields
+
+            if field.nullable
+
+        ]
+
+        mandatory = [
+
+            "sale_id",
+
+            "store_id",
+
+            "customer_id",
+
+            "product_id",
+
+            "sale_date"
+
+        ]
+
+        invalid = [
+
+            column
+
+            for column in mandatory
+
+            if column in nullable_columns
+
+        ]
+
+        if invalid:
+
+            raise Exception(
+
+                f"Mandatory columns nullable : {invalid}"
+
+            )
+
+    # =========================================================================
+    # Main Validation
+    # =========================================================================
+
+    def validate(self):
+
+        self.validate_required_columns()
+
+        self.validate_unexpected_columns()
+
+        self.validate_primary_key()
+
+        self.validate_data_types()
+
+        self.validate_nullable()
+
+        return build_validation_result(
 
             validation_name="Schema Validation",
 
-            total_records=len(df),
+            status="SUCCESS",
 
-            message="Schema matches expected structure."
+            records_checked=self.df.count(),
+
+            failed_records=0,
+
+            execution_time=0,
+
+            message="Schema validation successful."
 
         )
-
-    report = pd.DataFrame({
-
-        "Missing Columns": pd.Series(missing_columns),
-
-        "Unexpected Columns": pd.Series(unexpected_columns)
-
-    })
-
-    result = validation_failure(
-
-        validation_name="Schema Validation",
-
-        total_records=len(df),
-
-        failed_records=len(missing_columns) + len(unexpected_columns),
-
-        failed_df=report,
-
-        message="Schema mismatch detected."
-
-    )
-
-    raise Exception(result.message)
