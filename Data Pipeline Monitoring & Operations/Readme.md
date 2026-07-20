@@ -1,48 +1,48 @@
 # Data Pipeline Monitoring & Operations
 
+Folder Structure:
 ```text
 Enterprise Data Pipeline Monitoring Framework
+
+enterprise-pipeline-monitoring/
 │
-├── Source Systems
-│      │
-│      ├── Sales
-│      ├── Customers
-│      ├── Products
-│      ├── Inventory
-│      └── Stores
+├── airflow/
+│   ├── dags/
+│   ├── logs/
+│   ├── plugins/
+│   └── requirements.txt
 │
-├── Landing Zone
-│      │
-│      └── Daily CSV Files
+├── config/
 │
-├── Airflow
-│      │
-│      ├── File Arrival Check
-│      ├── Data Validation
-│      ├── Load to Databricks
-│      ├── Data Quality Check
-│      ├── Monitoring
-│      └── Notification
+├── datasets/
+│   ├── sales/
+│   ├── customers/
+│   ├── products/
+│   └── inventory/
 │
-├── Databricks
-│      │
-│      ├── Bronze
-│      ├── Silver
-│      └── Gold
+├── databricks/
 │
-├── Monitoring Database
-│      │
-│      ├── Job Status
-│      ├── Execution History
-│      ├── SLA
-│      ├── Alerts
-│      └── Metrics
+├── monitoring/
 │
-├── CloudWatch
+├── validation/
 │
-├── Grafana Dashboard
+├── sql/
 │
-└── Email Alerts
+├── reports/
+│
+├── logs/
+│
+├── docs/
+│
+├── utils/
+│
+├── tests/
+│
+├── README.md
+├── requirements.txt
+├── docker-compose.yml
+├── .gitignore
+└── start_project.bat
 ```
 
 ## Business Scenario:
