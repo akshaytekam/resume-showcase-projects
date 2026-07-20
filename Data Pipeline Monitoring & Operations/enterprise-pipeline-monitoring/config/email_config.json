@@ -1,0 +1,13 @@
+{
+    "smtp_server": "smtp.gmail.com",
+
+    "smtp_port": 587,
+
+    "sender_email": "support@company.com",
+
+    "receiver_email": "dataengineering@company.com",
+
+    "username": "support@company.com",
+
+    "password": "change_this"
+}
