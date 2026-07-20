@@ -1,0 +1,25 @@
+{
+    "project_name": "Enterprise Pipeline Monitoring",
+
+    "environment": "DEV",
+
+    "landing_path": "datasets/",
+
+    "bronze_path": "bronze/",
+
+    "silver_path": "silver/",
+
+    "gold_path": "gold/",
+
+    "log_path": "logs/",
+
+    "sla_minutes": 90,
+
+    "email_alert": true,
+
+    "support_email": "support@company.com",
+
+    "cloudwatch_namespace": "PipelineMonitoring",
+
+    "grafana_url": "http://localhost:3000"
+}
