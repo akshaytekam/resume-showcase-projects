@@ -7,42 +7,171 @@ Enterprise Data Pipeline Monitoring Framework
 enterprise-pipeline-monitoring/
 │
 ├── airflow/
+│   │
 │   ├── dags/
-│   ├── logs/
+│   │   ├── monitoring_pipeline.py
+│   │   ├── monitoring_config.py
+│   │   ├── dag_factory.py
+│   │   └── dag_utils.py
+│   │
+│   ├── operators/
+│   │   └── custom_operators.py
+│   │
+│   ├── sensors/
+│   │   └── custom_sensors.py
+│   │
+│   ├── utils/
+│   │   ├── airflow_logger.py
+│   │   └── cloudwatch_metrics.py
+│   │
 │   ├── plugins/
+│   │
+│   ├── logs/
+│   │
 │   └── requirements.txt
 │
 ├── config/
+│   ├── dev.yaml
+│   ├── qa.yaml
+│   ├── prod.yaml
+│   └── logging.yaml
 │
 ├── datasets/
+│   │
 │   ├── sales/
+│   │   ├── sales_2026_01.csv
+│   │   ├── sales_2026_02.csv
+│   │   └── ...
+│   │
 │   ├── customers/
+│   │
 │   ├── products/
+│   │
 │   └── inventory/
 │
 ├── databricks/
+│   │
+│   ├── ingestion/
+│   │
+│   ├── transformation/
+│   │
+│   ├── validation/
+│   │
+│   ├── monitoring/
+│   │
+│   └── notebooks/
 │
 ├── monitoring/
+│   │
+│   ├── config/
+│   │   └── config.py
+│   │
+│   ├── logging/
+│   │   └── monitoring_logger.py
+│   │
+│   ├── metrics/
+│   │   ├── metrics_collector.py
+│   │   ├── pipeline_metrics.py
+│   │   └── sla_metrics.py
+│   │
+│   ├── health/
+│   │   ├── health_checker.py
+│   │   ├── pipeline_health.py
+│   │   └── sla_monitor.py
+│   │
+│   └── dashboard/
+│       └── monitoring_dashboard.py
+│
+├── alerting/
+│   ├── slack_notifier.py
+│   ├── teams_notifier.py
+│   ├── incident_manager.py
+│   ├── escalation_policy.py
+│   ├── notification_router.py
+│   └── alert_manager.py
+│
+├── monitoring_framework/
+│   │
+│   └── reporting/
+│       ├── config.py
+│       ├── report_logger.py
+│       ├── metrics_report.py
+│       ├── pipeline_health_report.py
+│       ├── sla_report.py
+│       ├── incident_report.py
+│       └── dashboard_data_builder.py
 │
 ├── validation/
+│   ├── schema_validator.py
+│   ├── duplicate_checker.py
+│   ├── null_validator.py
+│   ├── business_rule_validator.py
+│   └── reconciliation.py
 │
 ├── sql/
+│   ├── monitoring_queries.sql
+│   ├── sla_queries.sql
+│   ├── incident_queries.sql
+│   ├── dashboard_queries.sql
+│   └── warehouse_tables.sql
 │
 ├── reports/
+│   ├── daily/
+│   ├── weekly/
+│   ├── monthly/
+│   └── archived/
 │
 ├── logs/
+│   ├── airflow/
+│   ├── monitoring/
+│   ├── alerts/
+│   └── reports/
 │
 ├── docs/
+│   ├── Architecture.md
+│   ├── Airflow.md
+│   ├── Monitoring.md
+│   ├── Alerting.md
+│   ├── Reporting.md
+│   ├── Deployment.md
+│   └── Runbook.md
 │
 ├── utils/
+│   ├── aws_utils.py
+│   ├── file_utils.py
+│   ├── spark_utils.py
+│   ├── date_utils.py
+│   └── common.py
 │
 ├── tests/
+│   ├── test_airflow.py
+│   ├── test_monitoring.py
+│   ├── test_alerting.py
+│   ├── test_reporting.py
+│   └── test_validation.py
 │
+├── docker/
+│   ├── Dockerfile
+│   └── entrypoint.sh
+│
+├── scripts/
+│   ├── start_project.bat
+│   ├── start_project.sh
+│   ├── deploy.sh
+│   └── cleanup.sh
+│
+├── terraform/
+│   ├── main.tf
+│   ├── variables.tf
+│   ├── outputs.tf
+│   └── providers.tf
+│
+├── .env
+├── .gitignore
 ├── README.md
 ├── requirements.txt
 ├── docker-compose.yml
-├── .gitignore
-└── start_project.bat
+└── LICENSE
 ```
 
 ## Business Scenario:
