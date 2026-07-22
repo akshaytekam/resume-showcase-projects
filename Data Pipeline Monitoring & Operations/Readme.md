@@ -301,6 +301,7 @@ Email
 ```
 
 ## We'll also build the monitoring components
+```text
 Airflow DAG with retries, SLAs, sensors, email alerts, and dependencies
 Databricks Bronze → Silver → Gold notebooks
 Python validation framework
@@ -312,4 +313,57 @@ Root Cause Analysis (RCA) reports
 Operational reports
 Production support documentation
 If any file is missing, Airflow should fail immediately.
+```
 
+## Incident Handling:
+```text
+Suppose at 2:05 AM Sales Pipeline Failed
+
+Support Engineer
+
+↓
+
+Checks Airflow Logs
+
+↓
+
+Finds (sales.csv missing)
+↓
+
+Contacts Source Team
+
+↓
+
+Receives File
+
+↓
+
+Reruns DAG
+
+↓
+
+Pipeline Success
+
+↓
+
+Updates Incident
+
+↓
+
+Closes Ticket
+
+This is a very typical production support workflow.
+```
+## Root Cause Analysis (RCA):
+
+An incident report often looks like this:
+```text
+| Incident ID | INC-20260720-001                                                        |
+| ----------- | ----------------------------------------------------------------------- |
+| Issue       | Sales pipeline failed                                                   |
+| Detection   | Airflow email alert                                                     |
+| Root Cause  | Missing `sales.csv` from Store 145                                      |
+| Impact      | Sales dashboard delayed by 45 minutes                                   |
+| Resolution  | Requested file from source team and reran pipeline                      |
+| Prevention  | Added file-arrival sensor with a 30-minute timeout and escalation alert |
+```
