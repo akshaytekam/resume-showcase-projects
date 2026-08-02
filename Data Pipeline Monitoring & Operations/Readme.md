@@ -367,3 +367,24 @@ An incident report often looks like this:
 | Resolution  | Requested file from source team and reran pipeline                      |
 | Prevention  | Added file-arrival sensor with a 30-minute timeout and escalation alert |
 ```
+it connects Airflow + Databricks + CloudWatch + Grafana into one complete monitoring solution.
+
+In our project, CloudWatch is the backend where metrics and logs are collected, while Grafana is the visualization layer that queries CloudWatch (or Prometheus, if configured) and presents dashboards.
+
+```text
+                Airflow
+                   │
+                   ▼
+            Monitoring Framework
+                   │
+      ┌────────────┴─────────────┐
+      ▼                          ▼
+ CloudWatch Logs          CloudWatch Metrics
+      │                          │
+      └────────────┬─────────────┘
+                   ▼
+                Grafana
+                   │
+                   ▼
+      Dashboards / Alerts / Reports
+```
