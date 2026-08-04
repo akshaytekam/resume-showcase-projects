@@ -128,3 +128,4 @@ AWS_DBT_Snowflake/
 - Now install DBT on VS Code editor using virtual env. for transformation.
       - DBT just provides us the modularised coding templete for transformations.
 - Now connect the DBT and Snowflake.
+
