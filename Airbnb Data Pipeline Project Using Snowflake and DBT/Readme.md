@@ -116,3 +116,15 @@ AWS_DBT_Snowflake/
 ## STEP - 1
 - Create AWS S3 Bucket 
 - Now within that bucket create folders/containers for separate data.
+
+## STEP - 2
+- Create Snowflake's Database, Schemas and Tables
+- Then do the integration between AWS S3 and Snowflake.
+- We can create the separate external stages for each folder in S3 bucket.
+- Create the IAM role for snowflake connectivity. ANd also create the Access Key for the user to access the folder.
+- And now using COPY INTO command insert all data to the tables through staging.
+
+## STEP - 3
+- Now install DBT on VS Code editor using virtual env. for transformation.
+      - DBT just provides us the modularised coding templete for transformations.
+- Now connect the DBT and Snowflake.
