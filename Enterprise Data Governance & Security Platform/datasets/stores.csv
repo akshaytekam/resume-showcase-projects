@@ -1,0 +1,101 @@
+store_id,store_name,city,state,country_code,store_type,opening_date,active_flag
+STR0001,Store 0001,Nagpur,Telangana,IN,Retail,2016-03-03,Y
+STR0002,Store 0002,Sambalpur,Haryana,US,Retail,2012-04-19,Y
+STR0003,Store 0003,Kota,Sikkim,IN,Flagship,2019-06-19,Y
+STR0004,Store 0004,Gudivada,Maharashtra,IN,Retail,2014-11-27,Y
+STR0005,Store 0005,Ludhiana,Assam,SG,Flagship,2010-08-06,Y
+STR0006,Store 0006,Muzaffarpur,Mizoram,US,Flagship,2024-07-29,Y
+STR0007,Store 0007,Kishanganj,Gujarat,DE,Retail,2020-01-28,N
+STR0008,Store 0008,Muzaffarnagar,Manipur,GB,Retail,2013-07-31,Y
+STR0009,Store 0009,Chennai,Tripura,GB,Outlet,2013-06-27,Y
+STR0010,Store 0010,Bhusawal,Karnataka,GB,Retail,2012-01-30,Y
+STR0011,Store 0011,Bhatpara,Gujarat,IN,Outlet,2017-09-18,N
+STR0012,Store 0012,Kota,Assam,GB,Retail,2020-04-21,Y
+STR0013,Store 0013,Jalandhar,Kerala,IN,Outlet,2011-10-08,Y
+STR0014,Store 0014,Mahbubnagar,Himachal Pradesh,GB,Flagship,2023-11-15,Y
+STR0015,Store 0015,Jaunpur,Nagaland,SG,Retail,2011-07-24,Y
+STR0016,Store 0016,Burhanpur,Assam,US,Outlet,2011-10-16,Y
+STR0017,Store 0017,Tadipatri,West Bengal,IN,Outlet,2016-03-27,Y
+STR0018,Store 0018,Gangtok,Gujarat,GB,Retail,2018-04-21,Y
+STR0019,Store 0019,Ranchi,Sikkim,US,Flagship,2015-12-28,Y
+STR0020,Store 0020,Ramagundam,Assam,SG,Flagship,2013-11-02,Y
+STR0021,Store 0021,Salem,Madhya Pradesh,US,Retail,2020-05-14,Y
+STR0022,Store 0022,Malda,Rajasthan,GB,Flagship,2022-06-29,Y
+STR0023,Store 0023,Ujjain,Kerala,GB,Retail,2015-02-20,Y
+STR0024,Store 0024,Bhagalpur,Sikkim,GB,Outlet,2016-01-03,Y
+STR0025,Store 0025,Madurai,Punjab,US,Flagship,2017-01-21,Y
+STR0026,Store 0026,Deoghar,Telangana,DE,Outlet,2024-06-02,Y
+STR0027,Store 0027,Ujjain,Manipur,US,Outlet,2013-02-17,Y
+STR0028,Store 0028,Gopalpur,Rajasthan,SG,Flagship,2015-11-23,N
+STR0029,Store 0029,Anantapur,Uttarakhand,DE,Flagship,2018-12-16,Y
+STR0030,Store 0030,Berhampur,Uttarakhand,US,Retail,2021-06-06,Y
+STR0031,Store 0031,Satna,Madhya Pradesh,IN,Retail,2012-06-17,Y
+STR0032,Store 0032,Amritsar,Gujarat,US,Flagship,2019-06-21,N
+STR0033,Store 0033,Rajpur Sonarpur,Rajasthan,IN,Outlet,2018-07-24,N
+STR0034,Store 0034,Tenali,Rajasthan,DE,Flagship,2015-08-22,Y
+STR0035,Store 0035,Asansol,Himachal Pradesh,IN,Flagship,2012-07-27,Y
+STR0036,Store 0036,Shahjahanpur,Telangana,GB,Flagship,2017-08-18,Y
+STR0037,Store 0037,Bhimavaram,Maharashtra,GB,Outlet,2013-07-19,Y
+STR0038,Store 0038,Mirzapur,Haryana,IN,Flagship,2015-11-28,Y
+STR0039,Store 0039,Danapur,Meghalaya,US,Flagship,2012-05-21,Y
+STR0040,Store 0040,Nashik,West Bengal,SG,Flagship,2014-06-18,Y
+STR0041,Store 0041,Jamnagar,Rajasthan,GB,Retail,2022-02-05,Y
+STR0042,Store 0042,Bhusawal,Punjab,IN,Flagship,2017-04-09,Y
+STR0043,Store 0043,Kharagpur,Madhya Pradesh,IN,Retail,2018-02-21,Y
+STR0044,Store 0044,Dehri,Himachal Pradesh,US,Retail,2015-05-28,N
+STR0045,Store 0045,Raipur,Sikkim,IN,Retail,2020-11-25,Y
+STR0046,Store 0046,Mau,Bihar,SG,Retail,2012-11-17,Y
+STR0047,Store 0047,Raebareli,Goa,SG,Retail,2015-12-12,Y
+STR0048,Store 0048,Delhi,Telangana,SG,Outlet,2014-10-02,Y
+STR0049,Store 0049,Orai,Tripura,US,Flagship,2016-12-28,Y
+STR0050,Store 0050,Guna,Bihar,GB,Outlet,2021-08-10,Y
+STR0051,Store 0051,Guna,Punjab,IN,Retail,2015-01-15,Y
+STR0052,Store 0052,Jamnagar,Kerala,GB,Retail,2023-03-13,Y
+STR0053,Store 0053,Panvel,Tripura,US,Flagship,2014-12-10,Y
+STR0054,Store 0054,Khora ,Karnataka,IN,Flagship,2024-02-26,Y
+STR0055,Store 0055,Surat,Bihar,US,Retail,2010-09-15,Y
+STR0056,Store 0056,Aizawl,Haryana,IN,Flagship,2015-05-04,Y
+STR0057,Store 0057,New Delhi,Odisha,DE,Retail,2022-02-04,Y
+STR0058,Store 0058,Guwahati,Telangana,SG,Flagship,2020-08-08,Y
+STR0059,Store 0059,Coimbatore,Tripura,DE,Outlet,2014-04-09,Y
+STR0060,Store 0060,Warangal,Sikkim,IN,Flagship,2019-09-02,Y
+STR0061,Store 0061,Jamalpur,Goa,DE,Outlet,2020-06-22,Y
+STR0062,Store 0062,Dehri,West Bengal,IN,Retail,2019-01-12,Y
+STR0063,Store 0063,Rajpur Sonarpur,Nagaland,IN,Retail,2014-04-19,Y
+STR0064,Store 0064,Bijapur,Madhya Pradesh,SG,Outlet,2013-02-22,Y
+STR0065,Store 0065,Bahraich,Mizoram,US,Outlet,2020-05-17,Y
+STR0066,Store 0066,Jamshedpur,Haryana,IN,Outlet,2022-05-06,Y
+STR0067,Store 0067,Rajkot,Karnataka,IN,Flagship,2022-02-15,Y
+STR0068,Store 0068,Giridih,Nagaland,IN,Retail,2013-09-24,Y
+STR0069,Store 0069,Giridih,Haryana,DE,Outlet,2014-10-18,Y
+STR0070,Store 0070,Madurai,Tamil Nadu,IN,Retail,2018-07-02,Y
+STR0071,Store 0071,Berhampur,Assam,DE,Outlet,2020-03-16,Y
+STR0072,Store 0072,Bathinda,Assam,DE,Flagship,2022-06-19,Y
+STR0073,Store 0073,Alwar,Sikkim,US,Retail,2016-08-27,Y
+STR0074,Store 0074,Kakinada,Nagaland,IN,Flagship,2022-02-28,Y
+STR0075,Store 0075,Aurangabad,Odisha,GB,Retail,2011-02-15,N
+STR0076,Store 0076,Latur,Uttar Pradesh,DE,Flagship,2021-11-29,Y
+STR0077,Store 0077,Vellore,Gujarat,IN,Flagship,2011-10-19,Y
+STR0078,Store 0078,Jalandhar,Sikkim,IN,Flagship,2011-07-11,Y
+STR0079,Store 0079,Raichur,Maharashtra,DE,Retail,2022-10-11,Y
+STR0080,Store 0080,Bhind,West Bengal,SG,Flagship,2010-11-22,N
+STR0081,Store 0081,Navi Mumbai,Arunachal Pradesh,IN,Outlet,2024-09-29,N
+STR0082,Store 0082,Sonipat,Uttar Pradesh,SG,Flagship,2017-02-04,Y
+STR0083,Store 0083,Kulti,Gujarat,US,Flagship,2017-01-17,Y
+STR0084,Store 0084,Jorhat,Manipur,GB,Outlet,2012-12-08,Y
+STR0085,Store 0085,Bhusawal,Goa,DE,Outlet,2011-08-18,Y
+STR0086,Store 0086,Surendranagar Dudhrej,Haryana,DE,Flagship,2022-08-18,Y
+STR0087,Store 0087,Mango,Uttar Pradesh,IN,Flagship,2014-10-13,Y
+STR0088,Store 0088,Dhanbad,Rajasthan,GB,Retail,2017-10-30,Y
+STR0089,Store 0089,Tiruchirappalli,Tripura,US,Outlet,2016-05-23,Y
+STR0090,Store 0090,Rourkela,Maharashtra,DE,Flagship,2016-10-14,N
+STR0091,Store 0091,Ongole,Gujarat,SG,Retail,2024-12-24,Y
+STR0092,Store 0092,Allahabad,Goa,GB,Flagship,2012-04-28,Y
+STR0093,Store 0093,Delhi,Madhya Pradesh,GB,Retail,2012-05-26,Y
+STR0094,Store 0094,Malda,Jharkhand,US,Outlet,2016-04-27,N
+STR0095,Store 0095,Miryalaguda,Sikkim,US,Flagship,2017-09-09,Y
+STR0096,Store 0096,Bhatpara,Gujarat,GB,Flagship,2020-12-16,Y
+STR0097,Store 0097,Bellary,Arunachal Pradesh,IN,Retail,2024-03-24,Y
+STR0098,Store 0098,Satara,Arunachal Pradesh,GB,Retail,2010-01-30,Y
+STR0099,Store 0099,Bhimavaram,Meghalaya,US,Flagship,2015-11-16,Y
+STR0100,Store 0100,Howrah,Mizoram,DE,Flagship,2019-08-05,Y
