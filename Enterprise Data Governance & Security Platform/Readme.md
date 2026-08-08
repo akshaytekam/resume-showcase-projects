@@ -83,7 +83,7 @@ Each column must be classified like below.
          Power BI / Tableau
 ```
 
-## Repository Folder Structure:
+## Git Repository Folder Structure:
 ```text
 enterprise-data-governance-platform/
 │
@@ -273,25 +273,46 @@ s3://abc-retail-data-platform/
 
 Instead of one large catalog, we separate by environment.
 ```text
-Catalogs
-
-dev_catalog
+Unity Catalog
 │
-├── bronze
-├── silver
-└── gold
-
-test_catalog
+├── dev_catalog
+│   │
+│   ├── bronze
+│   │   ├── customers
+│   │   ├── orders
+│   │   ├── payments
+│   │   ├── employees
+│   │   ├── products
+│   │   ├── stores
+│   │   └── customer_segments
+│   │
+│   ├── silver
+│   │   ├── customers_clean
+│   │   ├── orders_clean
+│   │   ├── payments_clean
+│   │   ├── employees_clean
+│   │   └── products_clean
+│   │
+│   ├── gold
+│   │   ├── customer_360
+│   │   ├── daily_sales
+│   │   ├── customer_lifetime_value
+│   │   └── finance_summary
+│   │
+│   └── governance
+│       ├── dataset_metadata
+│       ├── column_metadata
+│       ├── data_classification
+│       ├── data_quality_results
+│       ├── ingestion_audit
+│       ├── permission_audit
+│       └── governance_audit
 │
-├── bronze
-├── silver
-└── gold
-
-prod_catalog
+├── test_catalog
+│   └── same structure
 │
-├── bronze
-├── silver
-└── gold
+└── prod_catalog
+    └── same structure
 ```
 
 ## Security Design (High Level)
