@@ -83,6 +83,164 @@ Each column must be classified like below.
          Power BI / Tableau
 ```
 
+## Repository Folder Structure:
+```text
+enterprise-data-governance-platform/
+│
+├── README.md
+├── requirements.txt
+├── .gitignore
+│
+├── configs/
+│   ├── config_dev.yml
+│   ├── config_test.yml
+│   ├── config_prod.yml
+│   └── governance_config.yml
+│
+├── src/
+│   │
+│   ├── common/
+│   │   ├── config_loader.py
+│   │   ├── logger.py
+│   │   ├── spark_utils.py
+│   │   └── date_utils.py
+│   │
+│   ├── ingestion/
+│   │   ├── common_ingestion.py
+│   │   ├── file_reader.py
+│   │   ├── schema_manager.py
+│   │   └── audit_manager.py
+│   │
+│   ├── validation/
+│   │   ├── null_validation.py
+│   │   ├── duplicate_validation.py
+│   │   ├── schema_validation.py
+│   │   ├── referential_validation.py
+│   │   └── validation_runner.py
+│   │
+│   ├── governance/
+│   │   ├── metadata_manager.py
+│   │   ├── classification_manager.py
+│   │   ├── tag_manager.py
+│   │   ├── lineage_manager.py
+│   │   └── policy_manager.py
+│   │
+│   ├── security/
+│   │   ├── rbac_manager.py
+│   │   ├── masking_manager.py
+│   │   ├── row_filter_manager.py
+│   │   └── permission_manager.py
+│   │
+│   └── audit/
+│       ├── access_audit.py
+│       ├── permission_audit.py
+│       └── audit_report.py
+│
+├── notebooks/
+│   │
+│   ├── 01_bronze/
+│   │   ├── 01_load_customers
+│   │   ├── 02_load_orders
+│   │   ├── 03_load_payments
+│   │   ├── 04_load_employees
+│   │   ├── 05_load_products
+│   │   ├── 06_load_stores
+│   │   └── 07_load_customer_segments
+│   │
+│   ├── 02_silver/
+│   │   ├── 01_clean_customers
+│   │   ├── 02_clean_orders
+│   │   ├── 03_clean_payments
+│   │   ├── 04_clean_employees
+│   │   └── 05_clean_products
+│   │
+│   ├── 03_gold/
+│   │   ├── 01_customer_360
+│   │   ├── 02_daily_sales
+│   │   ├── 03_customer_lifetime_value
+│   │   └── 04_finance_summary
+│   │
+│   ├── 04_governance/
+│   │   ├── 01_register_metadata
+│   │   ├── 02_classify_columns
+│   │   ├── 03_apply_tags
+│   │   ├── 04_lineage_validation
+│   │   └── 05_governance_quality_check
+│   │
+│   ├── 05_security/
+│   │   ├── 01_create_groups
+│   │   ├── 02_apply_permissions
+│   │   ├── 03_apply_masking
+│   │   └── 04_apply_row_security
+│   │
+│   └── 06_audit/
+│       ├── 01_access_audit
+│       ├── 02_permission_audit
+│       └── 03_compliance_report
+│
+├── sql/
+│   │
+│   ├── 01_catalog/
+│   │   ├── create_catalogs.sql
+│   │   ├── create_schemas.sql
+│   │   └── create_external_locations.sql
+│   │
+│   ├── 02_tables/
+│   │   ├── create_governance_tables.sql
+│   │   └── create_audit_tables.sql
+│   │
+│   ├── 03_security/
+│   │   ├── grants.sql
+│   │   ├── masking_policies.sql
+│   │   └── row_filters.sql
+│   │
+│   ├── 04_validation/
+│   │   ├── customer_checks.sql
+│   │   ├── order_checks.sql
+│   │   └── governance_checks.sql
+│   │
+│   └── 05_reporting/
+│       ├── audit_report.sql
+│       ├── permission_report.sql
+│       └── data_quality_report.sql
+│
+├── schemas/
+│   ├── customer_schema.py
+│   ├── order_schema.py
+│   ├── payment_schema.py
+│   ├── employee_schema.py
+│   ├── product_schema.py
+│   └── store_schema.py
+│
+├── tests/
+│   ├── test_ingestion.py
+│   ├── test_validation.py
+│   └── test_governance.py
+│
+├── airflow/
+│   ├── governance_pipeline_dag.py
+│   ├── ingestion_dag.py
+│   └── audit_dag.py
+│
+├── monitoring/
+│   ├── metrics.py
+│   ├── cloudwatch.py
+│   └── alerts.py
+│
+├── terraform/
+│   ├── aws/
+│   ├── databricks/
+│   └── snowflake/
+│
+└── documentation/
+    ├── architecture.md
+    ├── data_dictionary.md
+    ├── governance_policy.md
+    ├── security_model.md
+    ├── access_request_process.md
+    └── audit_runbook.md
+```
+
 ## My Data Lake Design
 
 The AWS S3 bucket is organized by environment and data layer.
@@ -151,41 +309,6 @@ The platform uses Role-Based Access Control (RBAC).
 ## Governance Standards
 
 Before implementation begins, the team defines standards. Like naming conventions, Data Ownership, 
-
-## AWS S3 Data Lake Structure
-```text
-s3://abc-retail-governance/
-
-│
-├── dev/
-│
-│   ├── bronze/
-│   │
-│   │   ├── customers/
-│   │   ├── orders/
-│   │   ├── employees/
-│   │   ├── products/
-│   │   ├── payments/
-│   │   └── stores/
-│   │
-│   ├── silver/
-│   │
-│   └── gold/
-│
-├── test/
-│
-├── prod/
-│
-├── audit/
-│
-├── metadata/
-│
-├── logs/
-│
-├── archive/
-│
-└── quarantine/
-```
 
 ## Governance Data classification
 Example customers.csv
