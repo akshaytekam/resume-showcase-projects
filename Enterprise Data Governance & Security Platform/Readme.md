@@ -359,3 +359,53 @@ Before loading anything into Databricks, we should document the datasets.
 | stores    | Operations | Internal            | Operations Team |
 ```
 
+## Final Medallion Architecture:
+```text
+                    RAW DATA
+                       │
+                       ▼
+                ┌─────────────┐
+                │    BRONZE   │
+                │             │
+                │ customers   │
+                │ transactions│
+                │ payments    │
+                │ employees   │
+                └──────┬──────┘
+                       │
+                  CLEANING
+                       │
+                       ▼
+                ┌─────────────┐
+                │    SILVER   │
+                │             │
+                │ customers   │
+                │ transactions│
+                │ payments    │
+                │ employees   │
+                └──────┬──────┘
+                       │
+              BUSINESS LOGIC
+                       │
+                       ▼
+                ┌─────────────┐
+                │     GOLD    │
+                │             │
+                │ customer_360│
+                │ transactions│
+                │ payments    │
+                └──────┬──────┘
+                       │
+                       ▼
+             ┌───────────────────┐
+             │ DATA GOVERNANCE   │
+             ├───────────────────┤
+             │ Classification    │
+             │ Metadata          │
+             │ RBAC              │
+             │ RLS               │
+             │ Masking           │
+             │ Lineage           │
+             │ Audit             │
+             └───────────────────┘
+```
