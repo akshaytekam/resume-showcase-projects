@@ -1,0 +1,576 @@
+{
+  "datasets": [
+    {
+      "name": "481be480",
+      "displayName": "KPI — Total Revenue",
+      "queryLines": [
+        "SELECT\r\n",
+        "    ROUND(SUM(total_revenue), 2) AS total_revenue\r\n",
+        "FROM retail_lakehouse.gold.gold_revenue;"
+      ],
+      "catalog": "retail_lakehouse",
+      "schema": "gold"
+    },
+    {
+      "name": "d50ece1c",
+      "displayName": "KPI — Total Orders",
+      "queryLines": [
+        "SELECT\r\n",
+        "    SUM(total_orders) AS total_orders\r\n",
+        "FROM retail_lakehouse.gold.gold_revenue;"
+      ],
+      "catalog": "retail_lakehouse",
+      "schema": "gold"
+    },
+    {
+      "name": "8e855cb9",
+      "displayName": "KPI — Total Units",
+      "queryLines": [
+        "SELECT\r\n",
+        "    SUM(total_units) AS total_units\r\n",
+        "FROM retail_lakehouse.gold.gold_revenue;"
+      ]
+    },
+    {
+      "name": "fdb13ea3",
+      "displayName": "Revenue trend",
+      "queryLines": [
+        "SELECT\r\n",
+        "    order_date,\r\n",
+        "    ROUND(total_revenue, 2) AS revenue\r\n",
+        "FROM retail_lakehouse.gold.gold_revenue\r\n",
+        "ORDER BY order_date;"
+      ]
+    },
+    {
+      "name": "802b390c",
+      "displayName": "Orders trend",
+      "queryLines": [
+        "SELECT\r\n",
+        "    order_date,\r\n",
+        "    total_orders\r\n",
+        "FROM retail_lakehouse.gold.gold_revenue\r\n",
+        "ORDER BY order_date;"
+      ]
+    },
+    {
+      "name": "6b22b14c",
+      "displayName": "Top 10 customers",
+      "queryLines": [
+        "SELECT\r\n",
+        "    customer_id,\r\n",
+        "    total_orders,\r\n",
+        "    ROUND(total_spend, 2) AS total_spend,\r\n",
+        "    last_order_date\r\n",
+        "FROM retail_lakehouse.gold.gold_customers\r\n",
+        "ORDER BY total_spend DESC\r\n",
+        "LIMIT 10;"
+      ]
+    },
+    {
+      "name": "e2cfeb26",
+      "displayName": "Customer revenue distribution segment",
+      "queryLines": [
+        "SELECT\r\n",
+        "    CASE\r\n",
+        "        WHEN total_spend >= 20000 THEN 'VIP'\r\n",
+        "        WHEN total_spend >= 10000 THEN 'HIGH_VALUE'\r\n",
+        "        WHEN total_spend >= 5000 THEN 'MEDIUM_VALUE'\r\n",
+        "        ELSE 'REGULAR'\r\n",
+        "    END AS customer_segment,\r\n",
+        "\r\n",
+        "    COUNT(*) AS customers,\r\n",
+        "    ROUND(SUM(total_spend), 2) AS revenue\r\n",
+        "\r\n",
+        "FROM retail_lakehouse.gold.gold_customers\r\n",
+        "\r\n",
+        "GROUP BY\r\n",
+        "    CASE\r\n",
+        "        WHEN total_spend >= 20000 THEN 'VIP'\r\n",
+        "        WHEN total_spend >= 10000 THEN 'HIGH_VALUE'\r\n",
+        "        WHEN total_spend >= 5000 THEN 'MEDIUM_VALUE'\r\n",
+        "        ELSE 'REGULAR'\r\n",
+        "    END\r\n",
+        "\r\n",
+        "ORDER BY revenue DESC;"
+      ]
+    }
+  ],
+  "relationshipGraphs": [
+    {
+      "sources": [
+        {
+          "name": "Untitled_dataset",
+          "datasetName": "481be480"
+        },
+        {
+          "name": "Untitled_dataset_1",
+          "datasetName": "d50ece1c"
+        },
+        {
+          "name": "Untitled_dataset_2",
+          "datasetName": "8e855cb9"
+        },
+        {
+          "name": "Untitled_dataset_3",
+          "datasetName": "fdb13ea3"
+        },
+        {
+          "name": "Untitled_dataset_4",
+          "datasetName": "802b390c"
+        },
+        {
+          "name": "Untitled_dataset_5",
+          "datasetName": "6b22b14c"
+        },
+        {
+          "name": "Untitled_dataset_6",
+          "datasetName": "e2cfeb26"
+        }
+      ]
+    }
+  ],
+  "pages": [
+    {
+      "name": "b4605af5",
+      "displayName": "RetailSales",
+      "layout": [
+        {
+          "widget": {
+            "name": "d53a15f9",
+            "multilineTextboxSpec": {
+              "lines": [
+                "# <span style=\"text-align:center;display:block\"><span style=\"font-weight: 700;font-family: Lato;font-size: 36px;line-height: 1.5;\">Sales Dashboard</span></span>"
+              ]
+            },
+            "specExtensions": {
+              "widgetBackgroundColor": {
+                "light": "#CDBBBB"
+              },
+              "widgetBorderColor": {
+                "light": "#5B1212"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 12,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "911732e8",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "fields": [
+                    {
+                      "name": "sum(Untitled_dataset__total_revenue)",
+                      "expression": "SUM(`Untitled_dataset`.`total_revenue`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {},
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "sum(Untitled_dataset__total_revenue)",
+                  "format": {
+                    "type": "number-currency",
+                    "currencyCode": "USD",
+                    "abbreviation": "compact",
+                    "decimalPlaces": {
+                      "type": "max",
+                      "places": 2
+                    }
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            },
+            "specExtensions": {
+              "widgetBackgroundColor": {
+                "light": "#5FD5D1"
+              },
+              "widgetBorderColor": {
+                "light": "#A66868"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 2,
+            "width": 4,
+            "height": 4
+          }
+        },
+        {
+          "widget": {
+            "name": "9bed981e",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "fields": [
+                    {
+                      "name": "sum(Untitled_dataset_1__total_orders)",
+                      "expression": "SUM(`Untitled_dataset_1`.`total_orders`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {},
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "sum(Untitled_dataset_1__total_orders)",
+                  "format": {
+                    "type": "number-plain",
+                    "abbreviation": "compact",
+                    "decimalPlaces": {
+                      "type": "max",
+                      "places": 2
+                    }
+                  },
+                  "displayName": "Total Revenue"
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            },
+            "specExtensions": {
+              "widgetBackgroundColor": {
+                "light": "#5FD5D1"
+              },
+              "widgetBorderColor": {
+                "light": "#A96868"
+              }
+            }
+          },
+          "position": {
+            "x": 4,
+            "y": 2,
+            "width": 4,
+            "height": 4
+          }
+        },
+        {
+          "widget": {
+            "name": "ce433c41",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "fields": [
+                    {
+                      "name": "sum(Untitled_dataset_2__total_units)",
+                      "expression": "SUM(`Untitled_dataset_2`.`total_units`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {},
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "sum(Untitled_dataset_2__total_units)",
+                  "format": {
+                    "type": "number-plain",
+                    "abbreviation": "compact",
+                    "decimalPlaces": {
+                      "type": "max",
+                      "places": 2
+                    }
+                  },
+                  "displayName": "Total Revenue"
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            },
+            "specExtensions": {
+              "widgetBackgroundColor": {
+                "light": "#5FD5D1"
+              },
+              "widgetBorderColor": {
+                "light": "#9F5E5E"
+              }
+            }
+          },
+          "position": {
+            "x": 8,
+            "y": 2,
+            "width": 4,
+            "height": 4
+          }
+        },
+        {
+          "widget": {
+            "name": "d50797c1",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "fields": [
+                    {
+                      "name": "Untitled_dataset_3__order_date",
+                      "expression": "`Untitled_dataset_3`.`order_date`"
+                    },
+                    {
+                      "name": "sum(Untitled_dataset_3__revenue)",
+                      "expression": "SUM(`Untitled_dataset_3`.`revenue`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {},
+              "version": 3,
+              "widgetType": "line",
+              "encodings": {
+                "x": {
+                  "fieldName": "Untitled_dataset_3__order_date",
+                  "scale": {
+                    "type": "temporal"
+                  }
+                },
+                "y": {
+                  "fieldName": "sum(Untitled_dataset_3__revenue)",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            },
+            "specExtensions": {
+              "widgetBorderColor": {
+                "light": "#B96B6B"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 6,
+            "width": 12,
+            "height": 5
+          }
+        },
+        {
+          "widget": {
+            "name": "22a5400c",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "fields": [
+                    {
+                      "name": "Untitled_dataset_5__customer_id",
+                      "expression": "`Untitled_dataset_5`.`customer_id`"
+                    },
+                    {
+                      "name": "sum(Untitled_dataset_5__total_spend)",
+                      "expression": "SUM(`Untitled_dataset_5`.`total_spend`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {},
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "Untitled_dataset_5__customer_id",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "y": {
+                  "fieldName": "sum(Untitled_dataset_5__total_spend)",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {
+                  "fieldName": "Untitled_dataset_5__customer_id",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            },
+            "specExtensions": {
+              "widgetBorderColor": {
+                "light": "#AB6A6A"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 11,
+            "width": 8,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "31835fd0",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "fields": [
+                    {
+                      "name": "monthly(Untitled_dataset_4__order_date)",
+                      "expression": "DATE_TRUNC(\"MONTH\", `Untitled_dataset_4`.`order_date`)"
+                    },
+                    {
+                      "name": "sum(Untitled_dataset_4__total_orders)",
+                      "expression": "SUM(`Untitled_dataset_4`.`total_orders`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "area",
+              "encodings": {
+                "x": {
+                  "fieldName": "monthly(Untitled_dataset_4__order_date)",
+                  "scale": {
+                    "type": "temporal"
+                  }
+                },
+                "y": {
+                  "fieldName": "sum(Untitled_dataset_4__total_orders)",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            },
+            "specExtensions": {
+              "widgetBorderColor": {
+                "light": "#9F5757"
+              }
+            }
+          },
+          "position": {
+            "x": 8,
+            "y": 11,
+            "width": 4,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "5fb9ab8f",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "fields": [
+                    {
+                      "name": "Untitled_dataset_6__customer_segment",
+                      "expression": "`Untitled_dataset_6`.`customer_segment`"
+                    },
+                    {
+                      "name": "Untitled_dataset_6__customers",
+                      "expression": "`Untitled_dataset_6`.`customers`"
+                    },
+                    {
+                      "name": "Untitled_dataset_6__revenue",
+                      "expression": "`Untitled_dataset_6`.`revenue`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showDescription": false,
+                "showTitle": false
+              },
+              "version": 2,
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "Untitled_dataset_6__customer_segment"
+                  },
+                  {
+                    "fieldName": "Untitled_dataset_6__customers"
+                  },
+                  {
+                    "fieldName": "Untitled_dataset_6__revenue"
+                  }
+                ]
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            },
+            "specExtensions": {
+              "widgetBackgroundColor": {
+                "light": "#EEF9F9"
+              },
+              "widgetBorderColor": {
+                "light": "#935B5B"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 17,
+            "width": 12,
+            "height": 3
+          }
+        }
+      ],
+      "pageType": "PAGE_TYPE_CANVAS",
+      "layoutVersion": "GRID_V1"
+    }
+  ],
+  "uiSettings": {
+    "theme": {
+      "widgetHeaderAlignment": "ALIGNMENT_UNSPECIFIED"
+    },
+    "applyModeEnabled": false
+  }
+}
