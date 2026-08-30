@@ -15,7 +15,7 @@
       "task_key": "batch_ingestion",
 
       "notebook_task": {
-        "notebook_path": "/RetailLakehouse/notebooks/01_batch_copy_into"
+        "notebook_path": "/Workspace/Users/RetailLakehouse/notebooks/01_batch_copy_into"
       }
     },
 
@@ -29,7 +29,7 @@
       ],
 
       "notebook_task": {
-        "notebook_path": "/RetailLakehouse/notebooks/04_silver_transform"
+        "notebook_path": "/Workspace/Users/RetailLakehouse/notebooks/04_silver_transform"
       }
     },
 
@@ -43,7 +43,7 @@
       ],
 
       "notebook_task": {
-        "notebook_path": "/RetailLakehouse/notebooks/05_gold_revenue"
+        "notebook_path": "/Workspace/Users/RetailLakehouse/notebooks/05_gold_revenue"
       }
     },
 
@@ -57,7 +57,7 @@
       ],
 
       "notebook_task": {
-        "notebook_path": "/RetailLakehouse/notebooks/06_gold_customers"
+        "notebook_path": "/Workspace/Users/RetailLakehouse/notebooks/06_gold_customers"
       }
     }
   ]
