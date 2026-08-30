@@ -2,6 +2,9 @@
 
 So this single project demonstrates COPY INTO + idempotency + Auto Loader + Delta Lake + Medallion Architecture + data quality + Time Travel + DLT/Lakeflow + orchestration + dashboarding—a strong end-to-end project.
 
+<img width="1774" height="887" alt="projectPlan" src="https://github.com/user-attachments/assets/773d1333-f114-4991-bf63-fc10bcbe76f1" />
+
+
 This production-style retail Lakehouse project on Databricks, where i built both batch and streaming pipelines using Delta Lake and Medallion Architecture. I ingested 13717 batch order records using COPY INTO with idempotency checks and 1500 streaming events using Auto Loader with checkpointing. I implemented Bronze, Silver, and Gold layers with data-quality validation, deduplication, and business transformations. I also used Delta Time Travel for auditing and historical data analysis, built a declarative DLT/Lakeflow pipeline for batch and streaming processing, orchestrated the workflow using Databricks multi-task Jobs, and created a sales dashboard from the Gold layer for business reporting.
 
 ## Project File Structure:
