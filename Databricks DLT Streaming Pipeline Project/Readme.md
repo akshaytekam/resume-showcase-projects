@@ -1,2 +1,2 @@
-# Databricks DLT Streaming Pipeline Project
+# Databricks DLT (Lakeflow pipelines) Streaming Pipeline Project
 
