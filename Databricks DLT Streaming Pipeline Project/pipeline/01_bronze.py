@@ -1,3 +1,6 @@
+# The @dp.table definitions create streaming tables when the function returns streaming DataFrames. 
+# Expectations can validate records as they enter the pipeline.
+
 from pyspark import pipelines as dp
 
 
