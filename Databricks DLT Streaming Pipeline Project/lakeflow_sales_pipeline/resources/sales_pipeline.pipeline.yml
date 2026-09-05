@@ -1,0 +1,28 @@
+resources:
+
+  pipelines:
+
+    sales_lakeflow_pipeline:
+
+      name: ${bundle.target}-sales-lakeflow-pipeline
+
+      catalog: ${var.catalog}
+
+      schema: ${var.schema}
+
+      development: true
+
+      continuous: false
+
+      serverless: true
+
+      libraries:
+
+        - file:
+            path: ../src/01_bronze.py
+
+        - file:
+            path: ../src/02_silver_scd.py
+
+        - file:
+            path: ../src/03_gold.sql
