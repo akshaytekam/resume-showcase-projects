@@ -1,63 +1,78 @@
--- Daily sales
+-- ==============================================
+-- GOLD DAILY SALES
+-- ============================================================
 
 CREATE OR REFRESH MATERIALIZED VIEW gold_daily_sales
+COMMENT 'Daily sales summary'
 AS
 SELECT
-    DATE(sale_timestamp) AS sale_date,
-    SUM(sale_amount) AS total_sales,
+    CAST(sale_timestamp AS DATE) AS sale_date,
+    COUNT(DISTINCT sale_id) AS total_transactions,
     SUM(quantity) AS total_quantity,
-    COUNT(DISTINCT sale_id) AS total_orders
+    SUM(sale_amount) AS total_sales,
+    AVG(sale_amount) AS average_transaction_value
 FROM silver_sales
-GROUP BY DATE(sale_timestamp);
+GROUP BY CAST(sale_timestamp AS DATE);
 
--- Sales by product
 
-CREATE OR REFRESH MATERIALIZED VIEW gold_product_sales
+-- ============================================================
+-- GOLD SALES BY PRODUCT
+-- =======================================================
+
+CREATE OR REFRESH MATERIALIZED VIEW gold_sales_by_product
+COMMENT 'Sales performance by product'
 AS
 SELECT
-    p.product_id,
-    p.product_name,
-    p.category,
-    SUM(s.quantity) AS units_sold,
-    SUM(s.sale_amount) AS revenue
-FROM silver_sales s
-JOIN silver_products_scd2 p
-    ON s.product_id = p.product_id
-WHERE p.__END_AT IS NULL
+    product_id,
+    product_name,
+    category,
+    COUNT(DISTINCT sale_id) AS total_transactions,
+    SUM(quantity) AS total_quantity,
+    SUM(sale_amount) AS total_sales,
+    AVG(sale_amount) AS average_sale
+FROM silver_sales
 GROUP BY
-    p.product_id,
-    p.product_name,
-    p.category;
+    product_id,
+    product_name,
+    category;
 
--- Customer sales
+
+-- ================================================
+-- GOLD SALES BY CITY
+-- ============================================================
+
+CREATE OR REFRESH MATERIALIZED VIEW gold_sales_by_city
+COMMENT 'Sales performance by customer city'
+AS
+SELECT
+    city,
+    COUNT(DISTINCT sale_id) AS total_transactions,
+    SUM(quantity) AS total_quantity,
+    SUM(sale_amount) AS total_sales,
+    AVG(sale_amount) AS average_sale
+FROM silver_sales
+WHERE city IS NOT NULL
+GROUP BY city;
+
+
+-- ========================================================
+-- GOLD CUSTOMER SALES
+-- ============================================================
 
 CREATE OR REFRESH MATERIALIZED VIEW gold_customer_sales
+COMMENT 'Customer sales summary'
 AS
 SELECT
-    c.customer_id,
-    c.customer_name,
-    c.city,
-    COUNT(s.sale_id) AS order_count,
-    SUM(s.sale_amount) AS total_spend
-FROM silver_sales s
-JOIN silver_customers_scd1 c
-    ON s.customer_id = c.customer_id
+    customer_id,
+    customer_name,
+    city,
+    COUNT(DISTINCT sale_id) AS total_transactions,
+    SUM(quantity) AS total_quantity,
+    SUM(sale_amount) AS total_sales,
+    AVG(sale_amount) AS average_transaction_value
+FROM silver_sales
+WHERE customer_id IS NOT NULL
 GROUP BY
-    c.customer_id,
-    c.customer_name,
-    c.city;
-
--- Executive summary
--- (This table use as one of the dashboard datasets)
-
-CREATE OR REFRESH MATERIALIZED VIEW gold_sales_summary
-AS
-SELECT
-    COUNT(DISTINCT sale_id) AS total_orders,
-    COUNT(DISTINCT customer_id) AS active_customers,
-    SUM(quantity) AS units_sold,
-    SUM(sale_amount) AS total_revenue,
-    AVG(sale_amount) AS average_order_value
-FROM silver_sales;
-
-
+    customer_id,
+    customer_name,
+    city;
