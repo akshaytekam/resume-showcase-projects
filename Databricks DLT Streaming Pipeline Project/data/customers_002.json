@@ -1,0 +1,34 @@
+[
+  {
+    "customer_id": 101,
+    "customer_name": "Akshay",
+    "city": "Mumbai",
+    "email": "akshay@gmail.com",
+    "operation": "UPDATE",
+    "sequence_num": 5
+  },
+  {
+    "customer_id": 102,
+    "customer_name": "Rahul Sharma",
+    "city": "Nagpur",
+    "email": "rahul@gmail.com",
+    "operation": "UPDATE",
+    "sequence_num": 6
+  },
+  {
+    "customer_id": 105,
+    "customer_name": "Sneha",
+    "city": "Bangalore",
+    "email": "sneha@gmail.com",
+    "operation": "INSERT",
+    "sequence_num": 7
+  },
+  {
+    "customer_id": 104,
+    "customer_name": "Amit",
+    "city": "Delhi",
+    "email": "amit@gmail.com",
+    "operation": "DELETE",
+    "sequence_num": 8
+  }
+]

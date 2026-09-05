@@ -1,0 +1,26 @@
+[
+  {
+    "product_id": 501,
+    "product_name": "Laptop",
+    "category": "Electronics",
+    "price": 70000,
+    "operation": "UPDATE",
+    "sequence_num": 5
+  },
+  {
+    "product_id": 502,
+    "product_name": "Mobile",
+    "category": "Electronics",
+    "price": 28000,
+    "operation": "UPDATE",
+    "sequence_num": 6
+  },
+  {
+    "product_id": 505,
+    "product_name": "Monitor",
+    "category": "Electronics",
+    "price": 18000,
+    "operation": "INSERT",
+    "sequence_num": 7
+  }
+]

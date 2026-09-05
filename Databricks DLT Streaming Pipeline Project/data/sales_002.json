@@ -1,0 +1,26 @@
+[
+  {
+    "sale_id": 10005,
+    "customer_id": 101,
+    "product_id": 501,
+    "quantity": 1,
+    "sale_amount": 70000,
+    "sale_timestamp": "2026-09-04T10:10:00"
+  },
+  {
+    "sale_id": 10006,
+    "customer_id": 105,
+    "product_id": 505,
+    "quantity": 2,
+    "sale_amount": 36000,
+    "sale_timestamp": "2026-09-04T10:15:00"
+  },
+  {
+    "sale_id": 10007,
+    "customer_id": 102,
+    "product_id": 502,
+    "quantity": 2,
+    "sale_amount": 56000,
+    "sale_timestamp": "2026-09-04T10:20:00"
+  }
+]

@@ -1,0 +1,34 @@
+[
+  {
+    "product_id": 501,
+    "product_name": "Laptop",
+    "category": "Electronics",
+    "price": 65000,
+    "operation": "INSERT",
+    "sequence_num": 1
+  },
+  {
+    "product_id": 502,
+    "product_name": "Mobile",
+    "category": "Electronics",
+    "price": 30000,
+    "operation": "INSERT",
+    "sequence_num": 2
+  },
+  {
+    "product_id": 503,
+    "product_name": "Headphones",
+    "category": "Accessories",
+    "price": 5000,
+    "operation": "INSERT",
+    "sequence_num": 3
+  },
+  {
+    "product_id": 504,
+    "product_name": "Keyboard",
+    "category": "Accessories",
+    "price": 2500,
+    "operation": "INSERT",
+    "sequence_num": 4
+  }
+]
