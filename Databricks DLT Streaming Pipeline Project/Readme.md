@@ -8,6 +8,9 @@ An e-commerce company receiving continuously arriving data for:
 
 Lakeflow automatically analyzes dependencies between datasets and orchestrates the graph rather than requiring us to manually orchestrate every transformation.
 
+<img width="1456" height="647" alt="pipeline graph" src="https://github.com/user-attachments/assets/d4ec1cc0-ce24-47c6-8cfd-4fb02b404cc3" />
+
+
 ```text
                     RAW DATA
                        │
@@ -68,6 +71,7 @@ bronze_products
 ## Gold layer with Materialized Views:-
 This is where Materialized Views make sense.
 Databricks describes materialized views as batch flows that incrementally maintain results when possible.
+
 
 ## Final Lakeflow pipeline graph:-
 ```text
