@@ -1,0 +1,37 @@
+bundle:
+  name: lakeflow_sales_pipeline
+
+include:
+  - resources/*.yml
+
+variables:
+
+  catalog:
+    description: Unity Catalog catalog
+    default: de_demo
+
+  schema:
+    description: Unity Catalog schema
+    default: lakeflow_sales
+
+targets:
+
+  dev:
+    mode: development
+    default: true
+
+    variables:
+      catalog: de_demo
+      schema: lakeflow_sales
+
+  test:
+    variables:
+      catalog: de_demo
+      schema: lakeflow_sales
+
+  prod:
+    mode: production
+
+    variables:
+      catalog: de_demo
+      schema: lakeflow_sales
