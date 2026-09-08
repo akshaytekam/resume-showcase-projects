@@ -1,17 +1,12 @@
-# ============================================================
-# adas_dlt_pipeline.py
-# ADAS Databricks Lakeflow Declarative Pipeline
-# ============================================================
-
 from pyspark import pipelines as dp
 from pyspark.sql.functions import (
     current_timestamp,
-    input_file_name,
     trim,
     upper,
     lower,
     col,
     to_date,
+    to_timestamp,
     hour
 )
 
@@ -67,7 +62,7 @@ def bronze_adas_batch():
 
         .withColumn(
             "_source_file",
-            input_file_name()
+            col("_metadata.file_path")
         )
     )
 
@@ -102,7 +97,7 @@ def bronze_adas_stream():
 
         .withColumn(
             "_source_file",
-            input_file_name()
+            col("_metadata.file_path")
         )
     )
 
@@ -289,6 +284,11 @@ def silver_adas_stream():
         .withColumn(
             "event_hour",
             hour(col("event_ts"))
+        )
+
+        .withColumn(
+            "event_ts",
+            to_timestamp(col("event_ts"))
         )
 
         .withWatermark(
