@@ -4,16 +4,16 @@ from pyspark.sql.functions import (
     input_file_name
 )
 
-from src.config import (
+from config import (
     BATCH_RAW_PATH,
     STREAM_RAW_PATH,
     BRONZE_TABLE
 )
 
-from src.schema import ADAS_EVENT_SCHEMA
+from schema import ADAS_EVENT_SCHEMA
 
 
-# ============================================================
+# ==============================================
 # 1. Batch Bronze
 # ============================================================
 
