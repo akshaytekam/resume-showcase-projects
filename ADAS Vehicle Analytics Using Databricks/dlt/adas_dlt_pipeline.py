@@ -7,13 +7,14 @@ from pyspark.sql.functions import (
     col,
     to_date,
     to_timestamp,
-    hour
+    hour,
+    expr
 )
 
 
-# ============================================================
+# =============================
 # Configuration
-# ============================================================
+# =================================================
 
 CATALOG = "adas_catalog"
 
@@ -38,9 +39,9 @@ STREAM_PATH = (
 )
 
 
-# ============================================================
+# =====================================
 # 1. BRONZE - Batch
-# ============================================================
+# ==================================================
 
 @dp.table(
     name="bronze_adas_batch",
@@ -67,7 +68,7 @@ def bronze_adas_batch():
     )
 
 
-# ============================================================
+# ===================================================
 # 2. BRONZE - Streaming
 # ============================================================
 
@@ -102,7 +103,7 @@ def bronze_adas_stream():
     )
 
 
-# ============================================================
+# ========================================
 # 3. SILVER - Batch
 # ============================================================
 
@@ -197,7 +198,7 @@ def silver_adas_batch():
     )
 
 
-# ============================================================
+# ======================================
 # 4. SILVER - Streaming
 # ============================================================
 
@@ -302,7 +303,7 @@ def silver_adas_stream():
     )
 
 
-# ============================================================
+# ============================================
 # 5. GOLD - Combined Events
 # ============================================================
 
@@ -335,3 +336,61 @@ def gold_adas_events():
             ["event_id"]
         )
     )
+
+# ===============================================
+# 6. BRONZE - Vehicle CDC Source
+# ============================================================
+
+@dp.table(
+    name="adas_vehicle_cdc",
+    comment="Vehicle CDC events for SCD Type 2 tracking"
+)
+def adas_vehicle_cdc():
+    return (
+        spark.readStream
+        .format("cloudFiles")
+        .option(
+            "cloudFiles.format",
+            "json"
+        )
+        .option(
+            "cloudFiles.inferColumnTypes",
+            "true"
+        )
+        .load(
+            f"{VOLUME_PATH}/raw/vehicle_cdc/"
+        )
+    )
+
+
+# =====================================
+# 7. SCD TYPE 2 TARGET
+# ============================================================
+
+dp.create_streaming_table(
+    name="dim_vehicle_history",
+    comment="ADAS vehicle dimension with SCD Type 2 history"
+)
+
+dp.create_auto_cdc_flow(
+    target="dim_vehicle_history",
+
+    source="adas_vehicle_cdc",
+
+    keys=[
+        "vehicle_id"
+    ],
+
+    sequence_by=col("sequence"),
+
+    apply_as_deletes=expr(
+        "operation = 'DELETE'"
+    ),
+
+    except_column_list=[
+        "operation",
+        "sequence"
+    ],
+
+    stored_as_scd_type="2"
+)
