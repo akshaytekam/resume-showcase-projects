@@ -46,3 +46,4 @@ We want to ingest those events into Databricks, validate and transform them, mai
 
 NOTE: We are using DEV, TEST and PROD environment.
 
+
