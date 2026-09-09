@@ -78,3 +78,35 @@ def execute_with_retry(
             )
 
             time.sleep(retry_interval)
+
+from datetime import datetime
+
+from audit import write_audit_record
+
+
+try:
+
+    execute_with_retry(
+        operation=process_bronze,
+        operation_name="Bronze ADAS Load"
+    )
+
+except Exception as exc:
+
+    write_audit_record(
+        spark=spark,
+        pipeline_name="adas_dlt_pipeline",
+        environment="dev",
+        layer="bronze",
+        table_name="bronze_adas_events",
+        batch_id="batch_20260909_001",
+        start_time=start_time,
+        end_time=datetime.now(),
+        records_read=0,
+        records_written=0,
+        records_rejected=0,
+        status="FAILED",
+        error_message=str(exc)
+    )
+
+    raise
