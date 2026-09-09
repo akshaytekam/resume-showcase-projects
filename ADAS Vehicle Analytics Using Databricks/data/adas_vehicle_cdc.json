@@ -1,0 +1,4 @@
+{"vehicle_id":"V001","vehicle_model":"X1","oem":"TOYOTA","operation":"INSERT","sequence":1}
+{"vehicle_id":"V002","vehicle_model":"Q5","oem":"AUDI","operation":"INSERT","sequence":2}
+{"vehicle_id":"V001","vehicle_model":"X2","oem":"TOYOTA","operation":"UPDATE","sequence":3}
+{"vehicle_id":"V002","vehicle_model":"Q5","oem":"AUDI","operation":"DELETE","sequence":4}
