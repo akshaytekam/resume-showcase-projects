@@ -188,3 +188,4 @@ quince-data-platform/
 - Duties: If you import inventory from international suppliers, any non-refundable customs duties, tariffs, and clearance fees levied by the government.
 - Fulfillment : Pick-and-Pack, 3PL, and Last-Mile Fees: "Fulfillment" typically refers to the process of picking an item off a warehouse shelf, packaging it, and prepping it for a specific customer order.
 - SKU category (Stock Keeping Unit category): It is a high-level classification used in retail inventory management to group similar individual products (SKUs) based on shared characteristics.
+- In Scope:  your team is officially responsible for completing. Out of Scope: goal that falls outside the agreed-upon project boundaries and is not funded.
