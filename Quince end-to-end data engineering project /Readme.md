@@ -189,3 +189,5 @@ quince-data-platform/
 - Fulfillment : Pick-and-Pack, 3PL, and Last-Mile Fees: "Fulfillment" typically refers to the process of picking an item off a warehouse shelf, packaging it, and prepping it for a specific customer order.
 - SKU category (Stock Keeping Unit category): It is a high-level classification used in retail inventory management to group similar individual products (SKUs) based on shared characteristics.
 - In Scope:  your team is officially responsible for completing. Out of Scope: goal that falls outside the agreed-upon project boundaries and is not funded.
+-  Ingestion manifest: In a data pipeline it is a metadata file or configuration record that explicitly lists which source files, records, or partitions need to be imported into a target storage or analytics system.
+-  Managed Identities and Service Principals: Are non-human (workload) identities used to authenticate and authorize applications or services to access Azure resources.
