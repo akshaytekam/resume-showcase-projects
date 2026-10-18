@@ -152,5 +152,3 @@ These are proposed development targets, not approved business SLAs.
 ## 11. Acceptance and Sign-Off
 
 The project will proceed to implementation once the requirements, KPI formulas, source mappings, refresh targets, security expectations, and reconciliation rules are documented.
-
-For this portfolio implementation, assumptions will be explicitly recorded and tested against the supplied synthetic datasets. In a real engagement, the relevant business and technical owners would approve the definitions before production release.
