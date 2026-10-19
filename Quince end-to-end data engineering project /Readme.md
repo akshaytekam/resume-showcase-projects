@@ -85,6 +85,9 @@ For every KPI, our requirements document will specify its formula, source, grain
 - Finance planning
 - FX provider
 
+<img width="672" height="567" alt="Data Sources Points" src="https://github.com/user-attachments/assets/dd0e2dcc-94e8-4041-bd44-25ee00e7b5a0" />
+
+
 **Source access checklist:** For every source, I would confirm the owner, API/file location, authentication method, schema, data volume, update frequency, historical backfill, CDC support, SLA, and data retention policy.
 
 ## Architecture:
