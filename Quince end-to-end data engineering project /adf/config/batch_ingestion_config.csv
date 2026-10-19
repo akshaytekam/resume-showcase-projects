@@ -1,8 +1,5 @@
-dataset_name,file_name,source_folder,load_type,enabled
-orders,orders.csv,_staging,FULL,true
-order_lines,order_lines.csv,_staging,FULL,true
-inventory_snapshots,inventory_snapshots.csv,_staging,FULL,true
-shipments,shipments.csv,_staging,FULL,true
-payment_transactions,payment_transactions.csv,_staging,FULL,true
-gateway_settlements,gateway_settlements.csv,_staging,FULL,true
-bank_statement_transactions,bank_statement_transactions.csv,_staging,FULL,true
+dataset_name,file_name,source_folder,load_type,enabled,batch_id
+orders,orders.csv,_staging,FULL,true,orders_2026-10-19
+order_lines,order_lines.csv,_staging,FULL,true,order_lines_2026-10-19
+inventory_snapshots,inventory_snapshots.csv,_staging,FULL,true,inventory_2026-10-19
+shipments,shipments.csv,_staging,FULL,true,shipments_2026-10-19
