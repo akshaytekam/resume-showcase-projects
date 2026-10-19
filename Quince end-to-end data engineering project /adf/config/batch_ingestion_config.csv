@@ -1,0 +1,5 @@
+dataset_name,file_name,source_folder,load_type
+orders,orders.csv,_staging,FULL
+order_lines,order_lines.csv,_staging,FULL
+inventory_snapshots,inventory_snapshots.csv,_staging,FULL
+shipments,shipments.csv,_staging,FULL
