@@ -13,6 +13,8 @@
 - **Global manufacturing partners**: Quince working with specialist manufacturing partners across different regions and selecting factories for quality and responsible production.
 - **Direct fulfillment and tracking**: Quince describes shipping directly from manufacturers to customers. Its logistics subsidiary also describes capabilities spanning planning, first-mile and last-mile logistics, tracking, returns, and fulfillment. These support our supply-chain use cases.
 
+Quince follows weekly small-batch ordering cadence and AI demand forecasting, this pipeline must continuously funnel data from external systems into an Azure Data Lake Storage Gen2 (ADLS Gen2) container.
+
 **Our platform should answer questions such as**:
 - Which products should we produce more or less of?
 - Which factory or shipping lane is causing delays?
