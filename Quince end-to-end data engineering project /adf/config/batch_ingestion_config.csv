@@ -3,3 +3,5 @@ orders,orders.csv,_staging,FULL,true,orders_2026-10-19
 order_lines,order_lines.csv,_staging,FULL,true,order_lines_2026-10-19
 inventory_snapshots,inventory_snapshots.csv,_staging,FULL,true,inventory_2026-10-19
 shipments,shipments.csv,_staging,FULL,true,shipments_2026-10-19
+dim_products,dim_products.csv,_staging,FULL,true
+dim_factories,dim_factories.csv,_staging,FULL,true
