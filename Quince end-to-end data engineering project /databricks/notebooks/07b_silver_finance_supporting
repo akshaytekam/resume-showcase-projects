@@ -1,0 +1,301 @@
+
+# Databricks notebook: 07b_silver_finance_supporting.py
+# Purpose: Standardize returns, general ledger, and finance budget data.
+# Input:  quince_dev.bronze.*
+# Output: quince_dev.silver.*
+
+from pyspark.sql import functions as F
+from pyspark.sql.window import Window
+from pyspark.sql.types import StringType
+
+BRONZE = "quince_dev.bronze"
+SILVER = "quince_dev.silver"
+AUDIT = "quince_dev.audit"
+
+spark.sql(f"CREATE SCHEMA IF NOT EXISTS {SILVER}")
+spark.sql(f"CREATE SCHEMA IF NOT EXISTS {AUDIT}")
+
+# Create a common quarantine table for rejected source rows.
+spark.sql(f"""
+CREATE TABLE IF NOT EXISTS {AUDIT}.finance_supporting_quarantine (
+    dataset_name STRING,
+    rejection_reason STRING,
+    rejected_at_utc TIMESTAMP,
+    source_record STRING
+) USING DELTA
+""")
+
+def source_table(name):
+    full_name = f"{BRONZE}.{name}"
+    if not spark.catalog.tableExists(full_name):
+        raise ValueError(
+            f"Missing Bronze table: {full_name}. "
+            "Ingest the corresponding CSV before running this notebook."
+        )
+    return spark.table(full_name)
+
+def find_col(df, candidates, required=False, label="column"):
+    """Return the first matching source column, ignoring case."""
+    lookup = {c.lower(): c for c in df.columns}
+    for candidate in candidates:
+        if candidate.lower() in lookup:
+            return lookup[candidate.lower()]
+    if required:
+        raise ValueError(
+            f"Could not find {label}. Tried {candidates}. "
+            f"Available columns: {df.columns}"
+        )
+    return None
+
+def text_col(df, candidates, required=False, label="column"):
+    name = find_col(df, candidates, required, label)
+    return F.trim(F.col(name).cast("string")) if name else F.lit(None).cast("string")
+
+def decimal_col(df, candidates, required=False, label="amount"):
+    name = find_col(df, candidates, required, label)
+    if not name:
+        return F.lit(None).cast("decimal(18,2)")
+    return F.expr(
+        f"try_cast(`{name}` AS DECIMAL(18,2))"
+    )
+
+def date_col(df, candidates, required=False, label="date"):
+    name = find_col(df, candidates, required, label)
+    if not name:
+        return F.lit(None).cast("date")
+    raw = F.trim(F.col(name).cast("string"))
+    # Handles common ISO date/timestamp and yyyy-MM-dd formats.
+    return F.coalesce(
+        F.to_date(raw),
+        F.to_date(raw, "yyyy-MM"),
+        F.to_date(F.to_timestamp(raw)),
+        F.to_date(raw, "MM/dd/yyyy"),
+        F.to_date(raw, "dd-MM-yyyy")
+    )
+
+def write_quarantine(df, dataset, reason_col):
+    rejected = (
+        df.filter(F.col(reason_col).isNotNull())
+          .select(
+              F.lit(dataset).alias("dataset_name"),
+              F.col(reason_col).alias("rejection_reason"),
+              F.current_timestamp().alias("rejected_at_utc"),
+              F.to_json(F.struct(*[F.col(c) for c in df.columns]))
+               .alias("source_record")
+          )
+    )
+    if rejected.limit(1).count() > 0:
+        rejected.write.format("delta").mode("append").saveAsTable(
+            f"{AUDIT}.finance_supporting_quarantine"
+        )
+
+def deduplicate(df, key_col):
+    # Source order is not assumed to be meaningful.
+    # If duplicates differ, the winner is arbitrary until a reliable
+    # update/ingestion timestamp is identified.
+    return df.dropDuplicates([key_col])
+
+# ------------------------------------------------------------
+# A. RETURNS
+# ------------------------------------------------------------
+src = source_table("returns")
+
+return_id = text_col(
+    src, ["return_id", "return_line_id", "rma_id", "id"],
+    required=True, label="return identifier"
+)
+order_id = text_col(src, ["order_id", "original_order_id"])
+product_id = text_col(src, ["product_id", "sku", "item_id"])
+return_date = date_col(
+    src, ["return_date", "created_at", "processed_date", "refund_date"]
+)
+quantity = decimal_col(
+    src, ["return_quantity", "quantity", "qty"], label="return quantity"
+)
+refund_amount = decimal_col(
+    src, ["refund_amount", "refund_total", "amount_refunded", "amount"],
+    label="refund amount"
+)
+status = F.upper(text_col(src, ["return_status", "status"]))
+reason = text_col(src, ["return_reason", "reason"])
+currency = F.upper(text_col(src, ["currency", "currency_code"]))
+
+returns = src.select(
+    return_id.alias("return_id"),
+    order_id.alias("order_id"),
+    product_id.alias("product_id"),
+    return_date.alias("return_date"),
+    quantity.alias("return_quantity"),
+    refund_amount.alias("refund_amount"),
+    status.alias("return_status"),
+    reason.alias("return_reason"),
+    currency.alias("currency"),
+    F.current_timestamp().alias("_silver_processed_at_utc")
+)
+
+returns = returns.withColumn(
+    "_rejection_reason",
+    F.when(F.col("return_id").isNull() | (F.col("return_id") == ""),
+           "MISSING_RETURN_ID")
+     .when(F.col("return_date").isNull(), "INVALID_OR_MISSING_RETURN_DATE")
+     .when(F.col("return_quantity").isNotNull() &
+           (F.col("return_quantity") <= 0), "NON_POSITIVE_RETURN_QUANTITY")
+     .when(F.col("refund_amount").isNull(), "INVALID_OR_MISSING_REFUND_AMOUNT")
+)
+
+write_quarantine(returns, "returns", "_rejection_reason")
+
+valid_returns = returns.filter(F.col("_rejection_reason").isNull()) \
+                       .drop("_rejection_reason")
+valid_returns = deduplicate(valid_returns, "return_id")
+
+(valid_returns.write.format("delta")
+ .mode("overwrite").option("overwriteSchema", "true")
+ .saveAsTable(f"{SILVER}.returns"))
+
+print("Silver returns rows:", valid_returns.count())
+
+# ------------------------------------------------------------
+# B. GENERAL LEDGER ENTRIES
+# ------------------------------------------------------------
+src = source_table("general_ledger_entries")
+
+journal_id = text_col(
+    src, ["journal_line_id", "ledger_entry_id", "entry_id",
+          "journal_id", "transaction_id"],
+    required=True, label="ledger entry identifier"
+)
+account_code = text_col(
+    src, ["account_code", "gl_account", "account_id", "account_number"],
+    required=True, label="general ledger account"
+)
+posting_date = date_col(
+    src, ["posting_date", "accounting_date", "journal_date", "date"],
+    required=True, label="posting date"
+)
+ledger_currency = F.upper(
+    text_col(src, ["currency", "currency_code"], required=True,
+             label="ledger currency")
+)
+debit = decimal_col(src, ["debit_amount", "debit", "debit_value"])
+credit = decimal_col(src, ["credit_amount", "credit", "credit_value"])
+amount = decimal_col(
+    src, ["signed_amount", "amount", "local_amount", "transaction_amount"]
+)
+description = text_col(src, ["description", "memo", "narrative"])
+account_name = text_col(src, ["account_name", "gl_account_name"])
+cost_center = text_col(src, ["cost_center", "department", "business_unit"])
+
+# Preserve source debit/credit and any supplied amount.
+# Do not interpret these as revenue/COGS until account mapping is approved.
+ledger = src.select(
+    journal_id.alias("ledger_entry_id"),
+    account_code.alias("account_code"),
+    account_name.alias("account_name"),
+    posting_date.alias("posting_date"),
+    ledger_currency.alias("currency"),
+    debit.alias("debit_amount"),
+    credit.alias("credit_amount"),
+    amount.alias("source_amount"),
+    description.alias("description"),
+    cost_center.alias("cost_center"),
+    F.current_timestamp().alias("_silver_processed_at_utc")
+)
+
+ledger = ledger.withColumn(
+    "_rejection_reason",
+    F.when(F.col("ledger_entry_id").isNull() |
+           (F.col("ledger_entry_id") == ""), "MISSING_LEDGER_ENTRY_ID")
+     .when(F.col("account_code").isNull() |
+           (F.col("account_code") == ""), "MISSING_ACCOUNT_CODE")
+     .when(F.col("posting_date").isNull(), "INVALID_POSTING_DATE")
+     .when(F.col("currency").isNull() | (F.col("currency") == ""),
+           "MISSING_CURRENCY")
+     .when(
+         F.col("source_amount").isNull() &
+         F.col("debit_amount").isNull() &
+         F.col("credit_amount").isNull(),
+         "MISSING_OR_INVALID_FINANCIAL_AMOUNT"
+     )
+)
+
+write_quarantine(ledger, "general_ledger_entries", "_rejection_reason")
+
+valid_ledger = ledger.filter(F.col("_rejection_reason").isNull()) \
+                     .drop("_rejection_reason")
+valid_ledger = deduplicate(valid_ledger, "ledger_entry_id")
+
+(valid_ledger.write.format("delta")
+ .mode("overwrite").option("overwriteSchema", "true")
+ .saveAsTable(f"{SILVER}.general_ledger_entries"))
+
+print("Silver general ledger rows:", valid_ledger.count())
+
+# ------------------------------------------------------------
+# C. FINANCE BUDGET
+# ------------------------------------------------------------
+src = source_table("finance_budget")
+
+budget_id = text_col(
+    src, ["budget_line_id", "budget_id", "plan_line_id", "id"]
+)
+period = date_col(
+    src, ["fiscal_month", "budget_period", "period_start", "month_start",
+          "budget_date", "period", "date"],
+    required=True, label="budget period"
+)
+category = text_col(
+    src, ["financial_category", "category", "account_code", "gl_account",
+          "account_id"],
+    required=True, label="budget financial category/account"
+)
+budget_currency = F.upper(
+    text_col(src, ["currency", "currency_code"], required=True,
+             label="budget currency")
+)
+budget_amount = decimal_col(
+    src, ["budget_amount", "planned_amount", "amount", "budget_value"],
+    required=True, label="budget amount"
+)
+department = text_col(src, ["department", "cost_center", "business_unit"])
+
+budget = src.select(
+    budget_id.alias("budget_line_id"),
+    period.alias("budget_period"),
+    category.alias("financial_category"),
+    department.alias("department"),
+    budget_currency.alias("currency"),
+    budget_amount.alias("budget_amount"),
+    F.current_timestamp().alias("_silver_processed_at_utc")
+)
+
+budget = budget.withColumn(
+    "_rejection_reason",
+    F.when(F.col("budget_period").isNull(), "INVALID_BUDGET_PERIOD")
+     .when(F.col("financial_category").isNull() |
+           (F.col("financial_category") == ""), "MISSING_BUDGET_CATEGORY")
+     .when(F.col("currency").isNull() | (F.col("currency") == ""),
+           "MISSING_BUDGET_CURRENCY")
+     .when(F.col("budget_amount").isNull(), "INVALID_BUDGET_AMOUNT")
+)
+
+write_quarantine(budget, "finance_budget", "_rejection_reason")
+
+valid_budget = budget.filter(F.col("_rejection_reason").isNull()) \
+                     .drop("_rejection_reason")
+
+# Use a source budget-line ID if available. Otherwise, keep all rows:
+# multiple rows can be valid at the same period/category/department/currency.
+if "budget_line_id" in valid_budget.columns and budget_id is not None:
+    valid_budget = valid_budget.filter(
+        F.col("budget_line_id").isNull() | (F.col("budget_line_id") != "")
+    )
+    valid_budget = deduplicate(valid_budget, "budget_line_id")
+
+(valid_budget.write.format("delta")
+ .mode("overwrite").option("overwriteSchema", "true")
+ .saveAsTable(f"{SILVER}.finance_budget"))
+
+print("Silver finance budget rows:", valid_budget.count())
+
+print("Supporting Silver transformations completed.")
