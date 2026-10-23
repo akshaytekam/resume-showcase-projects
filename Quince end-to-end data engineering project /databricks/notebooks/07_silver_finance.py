@@ -78,6 +78,7 @@ amount_col = find_column([
     "transaction_amount",
     "payment_amount",
     "captured_amount",
+    "gross_amount",
 ])
 
 order_key = find_column([
@@ -288,6 +289,7 @@ valid_df = valid_df.withColumn(
 print(f"Silver table: {TARGET_TABLE}")
 print(f"Silver rows: {spark.table(TARGET_TABLE).count()}")
 print(f"Quarantined rows in this run: {invalid_count}")
+
 
 
 # ==================================================
@@ -586,3 +588,4 @@ print(
     "Silver settlement rows:",
     spark.table(SETTLEMENT_TARGET).count()
 )
+
