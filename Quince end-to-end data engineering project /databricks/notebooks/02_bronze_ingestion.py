@@ -79,6 +79,27 @@ datasets = {
         ),
         "batch_id": "bank_statement_transactions_2026-10-19",
     },
+    "returns": {
+        "path": (
+            f"{landing_base}/returns/"
+            "extract_date=2026-10-19/returns.csv"
+        ),
+        "batch_id": "returns_2026-10-19",
+    },
+    "general_ledger_entries": {
+        "path": (
+            f"{landing_base}/general_ledger_entries/"
+            "extract_date=2026-10-19/general_ledger_entries.csv"
+        ),
+        "batch_id": "general_ledger_entries_2026-10-19",
+    },
+    "finance_budget": {
+        "path": (
+            f"{landing_base}/finance_budget/"
+            "extract_date=2026-10-19/finance_budget.csv"
+        ),
+        "batch_id": "finance_budget_2026-10-19",
+    },
 }
 
 
