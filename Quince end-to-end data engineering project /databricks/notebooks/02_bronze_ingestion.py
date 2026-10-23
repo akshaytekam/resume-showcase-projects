@@ -30,6 +30,20 @@ datasets = {
         ),
         "batch_id": "order_lines_2026-10-19",
     },
+    "dim_products": {
+        "path": (
+            f"{landing_base}/dim_products/"
+            "extract_date=2026-10-19/dim_products.csv"
+        ),
+        "batch_id": "dim_products_2026-10-19",
+    },
+    "dim_factories": {
+        "path": (
+            f"{landing_base}/dim_factories/"
+            "extract_date=2026-10-19/dim_factories.csv"
+        ),
+        "batch_id": "dim_factories_2026-10-19",
+    },
 }
 
 
