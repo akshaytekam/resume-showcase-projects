@@ -288,3 +288,301 @@ valid_df = valid_df.withColumn(
 print(f"Silver table: {TARGET_TABLE}")
 print(f"Silver rows: {spark.table(TARGET_TABLE).count()}")
 print(f"Quarantined rows in this run: {invalid_count}")
+
+
+# ==================================================
+# 7. SILVER FINANCE - GATEWAY SETTLEMENTS
+# Append to databricks/notebooks/07_silver_finance.py
+# ==================================================
+
+from pyspark.sql import functions as F
+from pyspark.sql.window import Window
+import re
+
+SETTLEMENT_SOURCE = "quince_dev.bronze.gateway_settlements"
+SETTLEMENT_TARGET = "quince_dev.silver.gateway_settlements"
+SETTLEMENT_INVALID = "quince_dev.audit.gateway_settlements_invalid"
+
+
+def normalize_settlement_name(name):
+    return re.sub(
+        r"[^a-z0-9]+", "_", name.strip().lower()
+    ).strip("_")
+
+
+def find_settlement_column(columns, candidates, required=False):
+    for candidate in candidates:
+        if candidate in columns:
+            return candidate
+
+    if required:
+        raise ValueError(
+            f"Missing required column from {candidates}. "
+            f"Available columns: {columns}"
+        )
+    return None
+
+
+# --------------------------------------------------
+# 1. Read and normalize source
+# --------------------------------------------------
+settlement_df = spark.table(SETTLEMENT_SOURCE)
+
+normalized = [
+    normalize_settlement_name(c)
+    for c in settlement_df.columns
+]
+
+if len(normalized) != len(set(normalized)):
+    raise ValueError(
+        "Settlement columns collide after normalization. "
+        "Inspect source headers."
+    )
+
+settlement_df = settlement_df.toDF(*normalized)
+
+for name, dtype in settlement_df.dtypes:
+    if dtype == "string":
+        settlement_df = settlement_df.withColumn(
+            name,
+            F.when(
+                F.trim(F.col(name)) == "",
+                F.lit(None)
+            ).otherwise(F.trim(F.col(name)))
+        )
+
+columns = settlement_df.columns
+
+# --------------------------------------------------
+# 2. Identify source columns
+# --------------------------------------------------
+settlement_key = find_settlement_column(
+    columns,
+    [
+        "settlement_id",
+        "settlement_batch_id",
+        "payout_id",
+        "settlement_reference",
+        "payout_reference",
+    ],
+    required=True,
+)
+
+gross_col = find_settlement_column(
+    columns,
+    ["gross_amount", "gross_settlement_amount", "gross"],
+)
+
+fee_col = find_settlement_column(
+    columns,
+    ["fee_amount", "processing_fee", "gateway_fee", "fees"],
+)
+
+net_col = find_settlement_column(
+    columns,
+    ["net_amount", "net_settlement_amount", "payout_amount"],
+)
+
+amount_col = find_settlement_column(
+    columns,
+    ["settlement_amount", "amount", "total_amount"],
+)
+
+date_col = find_settlement_column(
+    columns,
+    [
+        "settlement_date",
+        "payout_date",
+        "settled_at",
+        "settlement_timestamp",
+        "created_at",
+    ],
+)
+
+currency_col = find_settlement_column(
+    columns,
+    ["currency", "currency_code", "settlement_currency"],
+)
+
+status_col = find_settlement_column(
+    columns,
+    ["status", "settlement_status", "payout_status"],
+)
+
+gateway_col = find_settlement_column(
+    columns,
+    ["gateway", "payment_gateway", "provider"],
+)
+
+print("Settlement key:", settlement_key)
+print("Gross amount:", gross_col)
+print("Fee amount:", fee_col)
+print("Net amount:", net_col)
+print("Fallback amount:", amount_col)
+print("Settlement date:", date_col)
+
+if not any([gross_col, net_col, amount_col]):
+    raise ValueError(
+        "No usable gross, net, or settlement amount column found."
+    )
+
+# --------------------------------------------------
+# 3. Create standard finance columns
+# --------------------------------------------------
+settlement_df = settlement_df.withColumn(
+    "settlement_id_clean",
+    F.trim(F.col(settlement_key).cast("string"))
+)
+
+def decimal_column(source_column):
+    if source_column:
+        return F.expr(
+            f"try_cast(`{source_column}` AS DECIMAL(18,2))"
+        )
+    return F.lit(None).cast("decimal(18,2)")
+
+settlement_df = (
+    settlement_df
+    .withColumn("gross_amount_clean", decimal_column(gross_col))
+    .withColumn("fee_amount_clean", decimal_column(fee_col))
+    .withColumn("net_amount_clean", decimal_column(net_col))
+    .withColumn("settlement_amount_clean", decimal_column(amount_col))
+)
+
+# Derive net from gross minus fees only if the source
+# does not supply net amount and both components exist.
+if not net_col and gross_col and fee_col:
+    settlement_df = settlement_df.withColumn(
+        "net_amount_clean",
+        F.col("gross_amount_clean") - F.col("fee_amount_clean")
+    )
+
+# If there is no gross/net-specific field, preserve the
+# generic settlement amount without inventing its meaning.
+if currency_col:
+    settlement_df = settlement_df.withColumn(
+        "currency_clean",
+        F.upper(F.trim(F.col(currency_col).cast("string")))
+    )
+
+if status_col:
+    settlement_df = settlement_df.withColumn(
+        "settlement_status_clean",
+        F.upper(F.trim(F.col(status_col).cast("string")))
+    )
+
+if gateway_col:
+    settlement_df = settlement_df.withColumn(
+        "gateway_clean",
+        F.upper(F.trim(F.col(gateway_col).cast("string")))
+    )
+
+if date_col:
+    raw_date = F.col(date_col).cast("string")
+
+    settlement_df = settlement_df.withColumn(
+        "settlement_timestamp_clean",
+        F.coalesce(
+            F.to_timestamp(raw_date),
+            F.to_timestamp(raw_date, "yyyy-MM-dd HH:mm:ss"),
+            F.to_timestamp(raw_date, "yyyy-MM-dd'T'HH:mm:ss"),
+            F.to_timestamp(raw_date, "yyyy-MM-dd"),
+            F.to_timestamp(raw_date, "MM/dd/yyyy HH:mm:ss"),
+        )
+    )
+
+# --------------------------------------------------
+# 4. Data quality checks
+# --------------------------------------------------
+# A settlement needs an identifier and at least one
+# usable monetary value. Do not reject negative values
+# automatically: adjustments and reversals may be negative.
+has_amount = (
+    F.col("gross_amount_clean").isNotNull()
+    | F.col("net_amount_clean").isNotNull()
+    | F.col("settlement_amount_clean").isNotNull()
+)
+
+settlement_df = settlement_df.withColumn(
+    "_dq_reason",
+    F.when(
+        F.col("settlement_id_clean").isNull()
+        | (F.col("settlement_id_clean") == ""),
+        F.lit("MISSING_SETTLEMENT_KEY")
+    ).when(
+        ~has_amount,
+        F.lit("MISSING_OR_INVALID_SETTLEMENT_AMOUNT")
+    )
+)
+
+settlement_invalid_df = (
+    settlement_df
+    .filter(F.col("_dq_reason").isNotNull())
+    .withColumn("_dq_detected_at_utc", F.current_timestamp())
+)
+
+settlement_valid_df = (
+    settlement_df
+    .filter(F.col("_dq_reason").isNull())
+    .drop("_dq_reason")
+)
+
+invalid_count = settlement_invalid_df.count()
+
+if invalid_count > 0:
+    (
+        settlement_invalid_df.write
+        .format("delta")
+        .mode("append")
+        .option("mergeSchema", "true")
+        .saveAsTable(SETTLEMENT_INVALID)
+    )
+
+print("Invalid settlement rows:", invalid_count)
+
+# --------------------------------------------------
+# 5. Deduplicate by settlement key
+# --------------------------------------------------
+if "_ingested_at_utc" in settlement_valid_df.columns:
+    settlement_window = (
+        Window.partitionBy("settlement_id_clean")
+        .orderBy(
+            F.col("_ingested_at_utc").desc_nulls_last()
+        )
+    )
+else:
+    settlement_window = (
+        Window.partitionBy("settlement_id_clean")
+        .orderBy(F.lit(1))
+    )
+
+settlement_valid_df = (
+    settlement_valid_df
+    .withColumn(
+        "_dedup_rank",
+        F.row_number().over(settlement_window)
+    )
+    .filter(F.col("_dedup_rank") == 1)
+    .drop("_dedup_rank")
+    .withColumn(
+        "_silver_processed_at_utc",
+        F.current_timestamp()
+    )
+)
+
+# --------------------------------------------------
+# 6. Write Silver Delta table
+# --------------------------------------------------
+(
+    settlement_valid_df.write
+    .format("delta")
+    .mode("overwrite")
+    .option("overwriteSchema", "true")
+    .saveAsTable(SETTLEMENT_TARGET)
+)
+
+print("Silver settlement table:", SETTLEMENT_TARGET)
+print(
+    "Silver settlement rows:",
+    spark.table(SETTLEMENT_TARGET).count()
+)
