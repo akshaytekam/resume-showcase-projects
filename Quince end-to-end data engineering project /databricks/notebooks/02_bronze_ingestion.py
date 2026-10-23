@@ -58,6 +58,20 @@ datasets = {
         ),
         "batch_id": "shipments_2026-10-19",
     },
+    "payment_transactions": {
+        "path": (
+            f"{landing_base}/payment_transactions/"
+            "extract_date=2026-10-19/payment_transactions.csv"
+        ),
+        "batch_id": "payment_transactions_2026-10-19",
+    },
+    "gateway_settlements": {
+        "path": (
+            f"{landing_base}/gateway_settlements/"
+            "extract_date=2026-10-19/gateway_settlements.csv"
+        ),
+        "batch_id": "gateway_settlements_2026-10-19",
+    },
 }
 
 
