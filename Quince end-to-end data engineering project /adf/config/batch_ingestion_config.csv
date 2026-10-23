@@ -7,3 +7,4 @@ dim_products,dim_products.csv,_staging,FULL,true,dim_products_2026-10-19
 dim_factories,dim_factories.csv,_staging,FULL,true,dim_factories_2026-10-19
 payment_transactions,payment_transactions.csv,_staging,FULL,true,payment_transactions_2026-10-19
 gateway_settlements,gateway_settlements.csv,_staging,FULL,true,gateway_settlements_2026-10-19
+bank_statement_transactions,bank_statement_transactions.csv,_staging,FULL,true,bank_statement_transactions_2026-10-19
