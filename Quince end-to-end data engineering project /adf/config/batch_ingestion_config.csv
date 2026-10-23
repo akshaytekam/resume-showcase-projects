@@ -5,3 +5,4 @@ inventory_snapshots,inventory_snapshots.csv,_staging,FULL,true,inventory_2026-10
 shipments,shipments.csv,_staging,FULL,true,shipments_2026-10-19
 dim_products,dim_products.csv,_staging,FULL,true,dim_products_2026-10-19
 dim_factories,dim_factories.csv,_staging,FULL,true,dim_factories_2026-10-19
+payment_transactions,payment_transactions.csv,_staging,FULL,true,payment_transactions_2026-10-19
