@@ -44,6 +44,20 @@ datasets = {
         ),
         "batch_id": "dim_factories_2026-10-19",
     },
+    "inventory_snapshots": {
+        "path": (
+            f"{landing_base}/inventory_snapshots/"
+            "extract_date=2026-10-19/inventory_snapshots.csv"
+        ),
+        "batch_id": "inventory_snapshots_2026-10-19",
+    },
+    "shipments": {
+        "path": (
+            f"{landing_base}/shipments/"
+            "extract_date=2026-10-19/shipments.csv"
+        ),
+        "batch_id": "shipments_2026-10-19",
+    },
 }
 
 
