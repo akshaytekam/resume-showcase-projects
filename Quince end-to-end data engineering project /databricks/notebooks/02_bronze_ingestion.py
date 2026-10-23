@@ -72,6 +72,13 @@ datasets = {
         ),
         "batch_id": "gateway_settlements_2026-10-19",
     },
+    "bank_statement_transactions": {
+        "path": (
+            f"{landing_base}/bank_statement_transactions/"
+            "extract_date=2026-10-19/bank_statement_transactions.csv"
+        ),
+        "batch_id": "bank_statement_transactions_2026-10-19",
+    },
 }
 
 
