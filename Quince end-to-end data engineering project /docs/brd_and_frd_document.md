@@ -170,10 +170,54 @@ This dashboard checks whether gateway settlements agree with bank statement cred
 **18. Settlement Match Rate %**
 
 Measures the share of eligible settlements successfully matched to bank credits.
-\[
-\text{Match Rate \%}=\frac{\text{Matched settlements}}{\text{Eligible settlements}}\times100
-\]
+
+Match Rate % = (Matched settlements) / (Eligible settlements) * 100
 
 Visual: KPI card, daily trend and matched-versus-unmatched bar chart.
-
 Data: gateway_settlements.csv, bank_statement_transactions.csv and silver.settlement_bank_reconciliation. Define eligible settlement statuses consistently.
+
+**19. Unmatched Expected Payout**
+
+Measures the expected payout amount for eligible settlements without an assigned bank transaction.
+
+Visual: KPI card, aging/exception table and daily trend.
+Data: Gateway settlement net payout and settlement_bank_reconciliation, summarized in agg_treasury_daily. Confirm whether the figure includes only unmatched settlements, not variance cases.
+
+
+**20. Settlement Variance**
+
+Measures the difference between expected settlement payout and the assigned bank credit.
+
+Variance = (Bank Credit) - (Expected Payout)
+
+Visual: Variance bar chart, exception table and trend by settlement date.
+Data: Gateway settlements, bank statement transactions and the reconciliation output. The sign convention must match the chosen business definition.
+
+**21. Closing Cash Balance**
+
+Measures the cash balance at the end of a day or reporting period.
+
+Visual: KPI card, daily closing-cash line chart and bank-account breakdown.
+Data: Bank statement transactions with opening balance or a verified starting balance, signed transactions and posting dates. A ledger cash account balance may provide a separate accounting view. Transaction amounts alone do not establish closing balance without a starting balance.
+
+**22. Unmatched Bank Credits**
+
+Measures incoming bank credits that cannot be assigned to a settlement.
+
+Visual: Exception-count KPI, bank-credit amount card and searchable exception table.
+Data: bank_statement_transactions.csv and gold.fact_bank_unmatched. Our current design considers positive bank amounts; debit-side exceptions require a separate rule.
+
+**23. FX Exposure**
+
+Measures eligible foreign-currency balances or cash flows exposed to exchange-rate movements.
+
+Visual: Currency exposure bar chart, currency composition chart and FX trend.
+Data: Foreign-currency bank balances, settlement/ledger amounts and fx_rates.csv. Choose a reporting currency, valuation date and exposure definition before calculating.
+
+**24. Cash Forecast Accuracy**
+
+Compares forecast cash balances or flows against actual results.
+
+Visual: Forecast-versus-actual line chart and absolute error KPI.
+Data: A cash forecast dataset plus bank/ledger actuals aligned to the same dates and definition. This requires forecast outputs; it cannot be calculated from bank statements alone.
+
