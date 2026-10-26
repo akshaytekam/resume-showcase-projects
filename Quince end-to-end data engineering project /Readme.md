@@ -185,6 +185,50 @@ quince-data-platform/
 
 ```
 
+## The three ML models:
+
+**Model 1 — Demand Forecasting**
+
+Business problem: How much of each product are we likely to sell in the coming weeks?
+
+Input data
+- order_lines.csv — quantities sold and products
+- orders.csv — order dates and statuses
+- dim_products.csv — product attributes
+- inventory_snapshots.csv — stock availability
+Prediction: Expected units sold per product for the next 7, 14 or 30 days.
+
+Algorithm: Start with a seasonal-naive baseline, then test Random Forest or Gradient Boosting regression. Compare with a time-series model if sufficient history exists.
+Output table: quince_dev.gold.ml_demand_forecast
+Power BI visual: Actual versus predicted sales line chart, forecast table and low-stock risk indicators.
+
+**Model 2 — Shipment Delay Prediction**
+Business problem: Which shipments are likely to arrive late?
+
+Input data
+- shipments.csv — promised delivery date, carrier, shipment status
+- shipment_tracking_events.csv — transit events and timestamps
+- Factory and order attributes where available
+Prediction: Probability that a shipment will miss its promised delivery date.
+
+Algorithm: Logistic Regression as a baseline, followed by Random Forest or Gradient Boosting classification.
+Output table: quince_dev.gold.ml_shipment_delay_predictions
+Power BI visual: High-risk shipment table, delay-risk percentage by carrier, and predicted versus actual delay rates.
+
+**Model 3 — Cash Flow Forecasting**
+Business problem: How much cash will the business likely receive and pay out over the coming days or weeks?
+
+Input data
+- bank_statement_transactions.csv — historical cash movements
+- gateway_settlements.csv — expected and completed payouts
+- payment_transactions.csv — payment activity
+- fx_rates.csv — foreign-exchange rates, if multi-currency forecasting is required
+Prediction: Expected future daily cash inflows, outflows and net cash movement.
+
+Algorithm: Begin with a historical baseline, then evaluate a time-series model or regression model.
+Output table: quince_dev.gold.ml_cash_flow_forecast
+Power BI visual: Actual versus forecast cash flow, projected cash balance and potential liquidity alerts.
+
 ## Important Terminologies and Definations:
 - Shipment milestones: (Order Confirmed, Cargo Ready, Origin Pickup / First Mile, Arrived at Distribution Center, Out for Delivery / Last Mile)
 - Gross margin: the percentage of revenue a company retains after covering the direct costs of producing its goods or delivering its services.
