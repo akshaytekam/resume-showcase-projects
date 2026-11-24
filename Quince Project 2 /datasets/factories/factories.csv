@@ -1,0 +1,6 @@
+factory_id,factory_name,country,region,ethical_audit_status,quality_score,base_lead_time_days,active_flag
+F001,Inner Mongolia Knitwear,China,APAC,PASS,96,9,True
+F002,Saigon Textiles,Vietnam,APAC,PASS,93,7,True
+F003,Jaipur Naturals,India,APAC,PASS,91,8,True
+F004,Porto Home Studio,Mongolia,Europe,PASS,98,6,True
+F005,Suzhou Silk Works,Portugal,APAC,REVIEW,88,10,True

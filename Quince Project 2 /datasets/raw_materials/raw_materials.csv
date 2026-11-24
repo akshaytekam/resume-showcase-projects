@@ -1,0 +1,7 @@
+sku,material_name,material_cost_usd,material_currency,supplier_lead_time_days,reorder_point_units
+CASHMERE-001,Cashmere,15.96,USD,9,142
+LINEN-002,Linen,10.08,USD,12,132
+SILK-003,Silk,5.04,USD,9,53
+COTTON-004,Cotton,3.36,USD,5,87
+WOOL-005,Wool,6.72,USD,21,54
+DOWN-006,Down,17.64,USD,11,60
