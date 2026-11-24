@@ -129,6 +129,21 @@ quince_m2c.gold	           Business-ready facts, dimensions and aggregates
 - Dashboard 5 – Returns & Product Quality Analytics
     - Audience: Customer Experience, Product Quality and Finance team
 
+### A. Batch ingestion
+
+- (Simulated ADF + ADLS Gen2)
+- Factory ERP / Procurement / Customs
+- CSV files in Unity Catalog Volume
+- Lakeflow Materialized Views
+- Bronze Delta Tables
+
+### B. Event ingestion
+
+- (Simulated Kafka / Event Hubs)
+- Storefront and Carrier Webhooks
+- JSON / CSV event files
+- Lakeflow Streaming Table
+- Bronze Event Delta Table
 
 ## Important Terminologies:
 - Storefront Orders: Storefront orders are customer purchases placed directly through an online store's customer-facing website or app (its storefront), rather than through third-party marketplaces or POS.
