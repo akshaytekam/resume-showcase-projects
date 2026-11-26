@@ -145,5 +145,90 @@ quince_m2c.gold	           Business-ready facts, dimensions and aggregates
 - Lakeflow Streaming Table
 - Bronze Event Delta Table
 
+### Gold data model — what we're building:
+
+```text
+**A. Fact tables**
+Table	                        Grain	                                  Purpose
+-----                         -----                                  -------
+fact_order_economics	    One row per order	                Revenue, material, freight, duties, fees, refunds, profit
+fact_order_fulfillment	  One row per order	                Factory assignment, production and delivery performance
+fact_factory_production	  One row per production run	      Planned vs actual production, defects
+fact_factory_capacity	    Factory + SKU + date	            Available and utilized capacity
+fact_returns	            One row per return	              Refund, return reason, disposition, salvage
+fact_payments	            One row per payment	              Collection, gateway fee, refunds
+
+**B. Dimension tables**
+Table	                                                            Purpose
+------                                                            -------
+dim_factory	                                              Factory attributes, country, audit status, quality score
+dim_product	                                              SKU and product attributes
+dim_date	                                                Calendar analysis
+dim_geography	                                            Customer destination and region
+dim_carrier	                                              Carrier information
+
+**C. Aggregate tables**
+Table                                                            	Grain
+---------                                                       -----------
+agg_finance_monthly	                                        Month + currency
+agg_factory_performance                                    	Factory + reporting period
+agg_sku_profitability	                                      SKU + reporting period
+agg_country_logistics	                                      Country + reporting period
+```
+
+### Power BI data model design:
+After Gold is ready, we'll connect Power BI to the Gold tables using Databricks SQL.
+
+We will use a star-schema approach where appropriate.
+
+### Gold KPIs we have prepared:
+**Finance KPIs:**
+
+KPI	                                  Gold source	                              Calculation
+----                                   ----------                              -------------
+Gross Revenue	                    fact_order_economics	                        Qty × Selling price
+Net Sales	                        fact_order_economics	                        Revenue less discount
+Material Cost	                    fact_order_economics	                        Qty × material cost
+Freight Cost	                    fact_order_economics	                        Shipment freight
+Customs Duty	                    fact_order_economics	                        Estimated material value × tariff
+Payment Fees	                    fact_order_economics	                        Gateway fees
+Refunds	                          fact_order_economics	                        Return refund amount
+Contribution Profit	              fact_order_economics	                        Net sales minus costs plus salvage
+Contribution Margin	              fact_order_economics	                        Profit / net sales
+SKU Profitability	                agg_sku_profitability	                        Contribution profit by SKU
+
+**Supply Chain KPIs:**
+
+KPI	                                  Gold source	                              Calculation
+----                                   ----------                              -------------
+Factory Utilization	                  fact_factory_capacity                        	Utilized / total capacity
+Defect Rate	                        fact_factory_production	                          Defects / produced units
+Production Completion	              fact_factory_production	                        Produced / planned
+Average Delivery Time	                fact_order_fulfillment	                      Avg order-to-delivery days
+On-Time Delivery Rate	                fact_order_fulfillment	                      On-time / delivered
+Late Delivery Rate	                fact_order_fulfillment	                        Late / delivered
+Allocation Delay	                  fact_order_fulfillment	                        Allocation date - order date
+Freight per Order	                  fact_order_economics	                          Freight / orders
+Factory Performance	                agg_factory_performance	                        Combined production and delivery metrics
+Return Rate	                        fact_returns + order facts	                    Returned orders / orders
+
+
+### production improvements:
+```text
+Current limitation	                                                  Production improvement
+-------------------                                                   -------------------- 
+Material cost used as customs value	                                  Use actual customs-declared valuation
+Factory labor cost unavailable	                                      Add labor and conversion costs
+USD-only synthetic dataset	                                          Add currency conversion and FX rates
+Refund datasets may disagree	                                        Reconcile payment refunds to return records
+One shipment assumed per order	                                      Model order-to-shipment relationship separately
+Factory assignment inconsistencies	                                  Create authoritative factory allocation fact
+Date dimension only contains order dates	                            Generate a complete calendar
+Synthetic data	                                                      Integrate real ERP, carrier and payment sources
+Simple capacity calculation	                                          Add reservations, concurrency handling and allocation history
+Simplified tariff matching	                                          Implement effective-date and customs-rule logic
+```
+
+
 ## Important Terminologies:
 - Storefront Orders: Storefront orders are customer purchases placed directly through an online store's customer-facing website or app (its storefront), rather than through third-party marketplaces or POS.
